@@ -1,0 +1,25 @@
+#In this file, PPR stands for Personalized Page Rank
+
+Function: cached_PPR()
+
+Inputs: W, Q, alpha, beta, epsilon
+	#W == sparse matrix representation of graph
+	#Q == indices of query nodes
+	#alpha == restart probability
+	#beta == cache size
+	#epsilon == residual cut-off, after which we stop the power iteration
+
+Outputs: num_iterations, wall_runtime, global_proximity_scores
+
+
+def standard_PPR(W,Q,alpha,beta,epsilon):
+	
+	
+
+
+
+
+def cached_PPR(W,Q,alpha,beta,epsilon):
+	starting_vector <- COMBINE_PROXIMITY_VECTORS(proximity_vectors)
+	restart_vector <- GET_RESTART_VECTOR(W,query_nodes)
+	return RUN_PPR(W,starting_vector,restart_vector,alpha)
