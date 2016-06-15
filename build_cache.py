@@ -25,4 +25,4 @@ if __name__ == "__main__":
     alpha = .5
     path = "Cache/%s/%s/" % (cache_name, str(alpha))
     weight_matrix = ppr.read_csr_matrix("Data/%s.mat" % cache_name)
-    build_cache.build_cache(path,weight_matrix,alpha,num_cores=10)
+    build_cache(path,weight_matrix,alpha,num_cores=10)
