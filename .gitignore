@@ -1,6 +1,5 @@
-cplusLibrary/
+.idea/
+Cache/
 Data/
-GraphLibrary/
-MustafaRWR/
+Example_Code/
 Papers/
-load.py
