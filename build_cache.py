@@ -22,7 +22,7 @@ def pickle_node_i(path,weight_matrix,alpha,i):
 if __name__ == "__main__":
 
     cache_name = "Email-Enron"
-    alpha = .5
+    alpha = .01
     path = "Cache/%s/%s/" % (cache_name, str(alpha))
     weight_matrix = ppr.read_csr_matrix("Data/%s.mat" % cache_name)
     build_cache(path,weight_matrix,alpha,num_cores=10)
