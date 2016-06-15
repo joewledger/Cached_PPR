@@ -8,7 +8,7 @@ def test_build_cache():
     alpha = .5
     path = "Cache/%s/%s/" % (cache_name, str(alpha))
     weight_matrix = ppr.read_csr_matrix("Data/%s.mat" % cache_name)
-    cache_nodes = range(0,5)
+    cache_nodes = range(0,50)
 
     build_cache.build_cache(path,weight_matrix,alpha,cache_nodes=cache_nodes)
 
