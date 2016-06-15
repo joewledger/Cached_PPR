@@ -12,8 +12,8 @@ def build_cache(path, weight_matrix, alpha,num_cores=5,cache_nodes=None):
     Parallel(n_jobs=num_cores)(delayed(pickle_node_i)(path,weight_matrix,alpha,i) for i in cache_nodes)
 
 def pickle_node_i(path,weight_matrix,alpha,i):
-    start_vector = ppr.get_start_vector(weight_matrix.shape[0],[i])
-    restart_vector = start_vector.copy()
+    restart_vector = ppr.get_restart_vector(weight_matrix.shape[0],[i])
+    start_vector = restart_vector.copy()
 
     final_vector,iterations = ppr.ppr(weight_matrix,start_vector,restart_vector,alpha)
     full_path = "%s%d.p" % (path,i)
