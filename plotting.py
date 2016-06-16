@@ -101,9 +101,9 @@ def save_alpha_effect():
             sum_scores.append(ppr.cached_ppr(weight_matrix,cache_path, query_nodes,alpha,cache_size,norm_method="total_sum")[1])
             num_query_scores.append(ppr.cached_ppr(weight_matrix,cache_path, query_nodes,alpha,cache_size,norm_method="num_queries")[1])
 
-        pickle.dump(generic_scores,open("Results/Alpha/%s_%s_generic.p" % (query_size,str(alpha)), "wb"))
-        pickle.dump(sum_scores,open("Results/Alpha/%s_%s_sum_scores.p" % (query_size,str(alpha)), "wb"))
-        pickle.dump(num_query_scores,open("Results/Alpha/%s_%s_num_queries.p" % (query_size,str(alpha)), "wb"))
+        pickle.dump(generic_scores,open("Results/Alpha/%s_%.1f_generic.p" % (query_size,alpha), "wb"))
+        pickle.dump(sum_scores,open("Results/Alpha/%s_%.1f_sum_scores.p" % (query_size,alpha), "wb"))
+        pickle.dump(num_query_scores,open("Results/Alpha/%s_%.1f_num_queries.p" % (query_size,alpha), "wb"))
 
 
 
