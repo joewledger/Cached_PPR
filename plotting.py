@@ -4,6 +4,7 @@ import pickle
 import matplotlib.pyplot as plt
 import os.path
 import numpy as np
+import itertools
 
 def save_cache_size_effect():
 
@@ -13,7 +14,7 @@ def save_cache_size_effect():
     alpha = .01
     query_size = 100
     cache_size = [1,10,20,50,100,200,500,1000]
-    cache_path = "Cache/Email-Enron/0.5/"    
+    cache_path = "Cache/Email-Enron/0.5/"
     
     permuted_query_nodes = [random.sample(range(0,dimension),query_size) for p in range(0,num_permutations)]
 
@@ -22,7 +23,6 @@ def save_cache_size_effect():
 
     cached_permuted = lambda norm_method,cache_size : [cached_score(norm_method,cache_size,p) for p in permuted_query_nodes]
 
-    
     generic_scores = [ppr.generic_ppr(weight_matrix,p,alpha)[1] for p in permuted_query_nodes]
     #Map cache_size to a list of iteration scores
     total_sum_scores = {cs : cached_permuted("total_sum",cs) for cs in cache_size}
@@ -72,6 +72,43 @@ def cache_plot(cache_size,arr,num_fields,savefile):
     axes.legend(loc=5)
     plt.savefig(savefile)
 
+def save_alpha_effect():
+
+    weight_matrix = ppr.read_csr_matrix("Data/Email-Enron.mat")
+    dimension = weight_matrix.shape[0]
+    num_permutations = 10
+    query_sizes = [5,10,50,100]
+    alphas = [.1 * x for x in range(1,11)]
+    cache_size = 10
+    cache_path = "Cache/Email-Enron/0.5/"
+    savepath = "Results/Alpha/"
+    os.makedirs(savepath,exist_ok=True)
+
+    combinations = list(itertools.product(query_sizes,alphas))
+
+    for c in combinations:
+        query_size = c[0]
+        alpha = c[1]
+
+        generic_scores = []
+        sum_scores = []
+        num_query_scores = []
+
+        for i in range(0,num_permutations):
+            
+            query_nodes = random.sample(range(0,500),query_size)
+            generic_scores.append(ppr.generic_ppr(weight_matrix,query_nodes,alpha)[1])
+            sum_scores.append(ppr.cached_ppr(weight_matrix,cache_path, query_nodes,alpha,cache_size,norm_method="total_sum")[1])
+            num_query_scores.append(ppr.cached_ppr(weight_matrix,cache_path, query_nodes,alpha,cache_size,norm_method="num_queries")[1])
+
+        pickle.dump(generic_scores,open("Results/Alpha/%s_%s_generic.p" % (query_size,str(alpha)), "wb"))
+        pickle.dump(sum_scores,open("Results/Alpha/%s_%s_sum_scores.p" % (query_size,str(alpha)), "wb"))
+        pickle.dump(num_query_scores,open("Results/Alpha/%s_%s_num_queries.p" % (query_size,str(alpha)), "wb"))
+
+
+
+def plot_alpha_effect():
+    return None
 
 
 if __name__ == "__main__":
@@ -79,4 +116,9 @@ if __name__ == "__main__":
         save_cache_size_effect()
     if(not os.path.isfile("Results/cache_size.png")):
         plot_cache_size_effect()
+
+    if(not os.path.isdir("Results/Alpha/")):
+        save_alpha_effect()
+    if(not os.path.isdir("Results/Alpha/")):
+        plot_alpha_effect()
 
