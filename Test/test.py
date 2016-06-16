@@ -6,7 +6,7 @@ import random
 def test_build_cache():
     
     cache_name = "Email-Enron"
-    alpha = .5
+    alpha = .01
     path = "Cache/%s/%s/" % (cache_name, str(alpha))
     weight_matrix = ppr.read_csr_matrix("Data/%s.mat" % cache_name)
     cache_nodes = range(0,500)
@@ -55,10 +55,15 @@ def test_cached_and_generic_ppr():
 
     weight_matrix = ppr.read_csr_matrix("Data/Email-Enron.mat")
     cache_path = "Cache/Email-Enron/0.5/"
-    query_nodes = random.sample(range(0,500),100)
     alpha = .01
-    k = 10000
+    cache_size = 100
+    query_size = 499
+    query_nodes = random.sample(range(0,500),query_size)
+    
 
-    print(ppr.cached_ppr(weight_matrix,cache_path, query_nodes,alpha,k))
+    vector1, iteration1 = ppr.cached_ppr(weight_matrix,cache_path, query_nodes,alpha,cache_size,norm_method="num_queries")
+    vector2, iteration2 = ppr.cached_ppr(weight_matrix,cache_path, query_nodes,alpha,cache_size,norm_method="total_sum")
+    vector3, iteration3 = ppr.cached_ppr(weight_matrix,cache_path, query_nodes,alpha,cache_size,norm_method=None)
+    vector4, iteration4 = ppr.generic_ppr(weight_matrix,query_nodes,alpha)
 
-    print(ppr.generic_ppr(weight_matrix,query_nodes,alpha))
+    print(iteration1,iteration2,iteration3,iteration4)

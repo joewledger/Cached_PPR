@@ -14,9 +14,9 @@ import multiprocessing
 def read_csr_matrix(filename):
     return spio.loadmat(filename)["normalizedNetwork"]
 
-def generate_random_start_vector(dimension,k):
+def generate_random_start_vector(dimension,num_queries):
     
-    query_nodes = random.sample(range(0,dimension),k)
+    query_nodes = random.sample(range(0,dimension),num_queries)
     return query_nodes,get_restart_vector(dimension,query_nodes)
 
 def get_restart_vector(dimension,query_nodes):
@@ -26,34 +26,37 @@ def get_restart_vector(dimension,query_nodes):
     matrix.update(entries)
     return matrix.tocsr()
 
-def get_cached_start_vector(dimension,cached_vectors,k):
+def get_cached_start_vector(dimension,cached_vectors,cache_size,norm_method=None):
     entries = {}
 
     for vector in cached_vectors:
-        top_k = get_top_k_index_value_tuples(vector,k)
-        for entry in top_k:
+        curr_vector_cache = get_top_k_index_value_tuples(vector,cache_size)
+        for entry in curr_vector_cache:
             key_tuple = entry[0],0
             value = entry[1]
             entries[key_tuple] = (entries[key_tuple] + value if key_tuple in entries else value)
 
-    #entries = normalize_entries_dict(entries)
+    if(norm_method):
+        entries = normalize_entries_dict(entries,len(cached_vectors),method=norm_method)
     vector = dok_matrix((dimension, 1))
     vector.update(entries)
     return vector.tocsc()
 
-def normalize_entries_dict(entries):
-    value_sum = sum(v for v in entries.values())
-    for key in entries.keys():
-        entries[key] /= value_sum
-    return entries
+def normalize_entries_dict(entries,num_queries,method="total_sum"):
+    if(method == "total_sum"):
+        total_sum = sum(v for v in entries.values())
+        return {key : entries[key] / total_sum for key in entries.keys()}
+    elif(method == "num_queries"):
+        return {key : entries[key] / num_queries for key in entries.keys()}
 
 
-def cached_ppr(weight_matrix,cache_path, query_nodes,alpha,k):
+def cached_ppr(weight_matrix,cache_path, query_nodes,alpha,cache_size,norm_method="total_sum"):
 
     dimension = weight_matrix.shape[0]
 
     cached_vectors = [pickle.load(open("%s%d.p" % (cache_path,i),"rb")) for i in query_nodes]
-    start_vector = get_cached_start_vector(dimension,cached_vectors,k)
+    start_vector = get_cached_start_vector(dimension,cached_vectors,cache_size,
+                                           norm_method=norm_method)
     restart_vector = get_restart_vector(dimension,query_nodes)
     
     return ppr(weight_matrix,start_vector,restart_vector,alpha)
@@ -69,7 +72,7 @@ def ppr(weight_matrix, start_vector, restart_vector, alpha):
     max_iter = 1000
 
     iterations = 1
-    prev_vector = restart_vector.copy()
+    prev_vector = start_vector.copy()
     curr_vector = calculate_next_vector(weight_matrix,prev_vector,restart_vector,alpha)
 
     l1_norm = lambda c,p : norm(c-p)
