@@ -4,7 +4,7 @@ import sqlite3
 import itertools
 
 
-def build_cache(db_file, matrix_file, network_name, alphas, num_threads=5, top_k=200):
+def build_cache(db_file, matrix_file, network_name, alphas, num_threads=5, top_k=200, max_dim=None):
 
     initialize_database(db_file, define_schemas())
     weight_matrix = ppr.read_csr_matrix(matrix_file)
@@ -13,6 +13,8 @@ def build_cache(db_file, matrix_file, network_name, alphas, num_threads=5, top_k
     alpha_id_mapping = update_alpha_ids(db_file, alphas)
 
     dimension = weight_matrix.shape[0]
+    if(max_dim):
+        dimension = min(dimension, max_dim)
     #Cartesian product of node number and alpha_id
     #Should look something like this [(0,0), (0,1), (0,2), ... , (679, 0), (679, 1), ...]
     node_number_alpha_product = itertools.product(range(0, dimension), alpha_id_mapping.keys())
@@ -76,11 +78,12 @@ def define_schemas():
     integer = "INTEGER"
     int_primary = "INTEGER PRIMARY KEY"
     real = "REAL"
+    primary = "PRIMARY KEY"
 
     schemas = {}
-    schemas["proximity_vectors"] = [("network_name", text_primary), ("first_node", int_primary),
-                                    ("second_node", int_primary), ("ranking", integer),
-                                    ("alpha_id", int_primary), ("score", real)]
+    schemas["proximity_vectors"] = [("network_name", text), ("first_node", integer),
+                                    ("second_node", integer), ("ranking", integer),
+                                    ("alpha_id", integer), ("score", real), ("PRIMARY KEY", "(network_name, first_node, second_node, alpha_id)")]
 
     schemas["results"] = [("network_name", text), ("run_id", integer), ("query_size", integer),
                           ("alpha_id", integer), ("cache_size", integer), ("norm_type", text),
@@ -98,6 +101,7 @@ def initialize_database(db_file, schemas):
     for table in schemas.keys():
         schema_columns = ", ".join("%s %s" % x for x in schemas[table])
         command = 'create table if not exists %s (%s)' % (table, schema_columns)
+        print(command)
         c.execute(command)
 
     conn.commit()
@@ -110,6 +114,6 @@ if __name__ == "__main__":
     matrix_file = "Data/Email-Enron.mat"
     network_name = matrix_file[matrix_file.find("/") + 1:matrix_file.find(".")]
     alphas = [.01, .1, .25, .5, .9]
-    kwargs = dict(num_threads=5, top_k=200)
+    kwargs = dict(num_threads=5, top_k=200, max_dim=5)
 
     build_cache(db_file, matrix_file, network_name, alphas, **kwargs)
