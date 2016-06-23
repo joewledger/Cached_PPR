@@ -5,8 +5,6 @@ from scipy.sparse.linalg import *
 import numpy as np
 import random
 import pickle
-import os
-import multiprocessing
 #dok_matrix -> (dictionary of keys matrix) used for constructing sparse matrices incrementally
 #csr_matrix -> (compressed sparse row matrix) good for fast matrix arithmetic and matrix-vector products
 
@@ -68,17 +66,19 @@ def generic_ppr(weight_matrix,query_nodes,alpha):
 
 def ppr(weight_matrix, start_vector, restart_vector, alpha):
 
-    eps = .0001
-    max_iter = 1000
+    l1_norm = lambda c, p: abs(c - p).sum(0)
+
+    eps = .000001
+    max_iter = 10000
 
     iterations = 1
     prev_vector = start_vector.copy()
     curr_vector = calculate_next_vector(weight_matrix,prev_vector,restart_vector,alpha)
 
-    l1_norm = lambda c,p : norm(c-p)
     error_term = l1_norm(curr_vector,prev_vector)
-
+    
     while(error_term > eps and iterations < max_iter):
+
         prev_vector = curr_vector.copy()
         curr_vector = calculate_next_vector(weight_matrix,curr_vector,restart_vector,alpha)
         error_term = l1_norm(curr_vector,prev_vector)
@@ -92,7 +92,7 @@ def calculate_next_vector(weight_matrix,curr_vector,restart_vector,alpha):
 def get_top_k_index_value_tuples(final_vector,k):
     data = final_vector.toarray().flatten()
     indices = np.argsort(data)[-k:]
-    return [(indices[i],data[indices[i]]) for i in range(0,k)]
+    return [(int(indices[i]),data[indices[i]]) for i in range(0,k)]
         
 def print_top_k_indices_and_scores(final_vector,k):
     data = final_vector.toarray().flatten()
