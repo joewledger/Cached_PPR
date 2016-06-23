@@ -68,7 +68,7 @@ def ppr(weight_matrix, start_vector, restart_vector, alpha):
 
     l1_norm = lambda c, p: abs(c - p).sum(0)
 
-    eps = .000001
+    eps = .00001
     max_iter = 10000
 
     iterations = 1
