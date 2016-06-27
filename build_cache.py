@@ -124,6 +124,6 @@ if __name__ == "__main__":
 
     matrix_file = args.matrix_file
     network_name = matrix_file[matrix_file.find("/") + 1:matrix_file.find(".")]
-    kwargs = dict(num_threads=5, top_k=200, max_dim=5)
+    kwargs = dict(num_threads=args.num_threads, top_k=args.top_k, max_dim=args.max_dim)
 
     build_cache(args.db_file, matrix_file, network_name, args.alphas, **kwargs)
