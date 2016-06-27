@@ -2,6 +2,7 @@ import ppr
 from joblib import Parallel, delayed
 import sqlite3
 import itertools
+import argparse
 
 
 def build_cache(db_file, matrix_file, network_name, alphas, num_threads=5, top_k=200, max_dim=None):
@@ -110,10 +111,19 @@ def initialize_database(db_file, schemas):
 
 if __name__ == "__main__":
 
-    db_file = "Cache/proximity_vectors.sqlite3"
-    matrix_file = "Data/Email-Enron.mat"
+    parser = argparse.ArgumentParser(description="Builds cache of stored proximity vectors")
+    parser.add_argument('--db_file', type=str)
+    parser.add_argument('--matrix_file', type=str)
+    parser.add_argument('--alphas', type=float, nargs='+')
+    parser.add_argument('--num_threads', type=int)
+    parser.add_argument('--top_k', type=int)
+    parser.add_argument('--max_dim', type=int)
+    parser.set_defaults(db_file="Cache/proximity_vectors.sqlite3", matrix_file="Data/Email-Enron.mat",
+                        alphas=[.01, .1, .25, .5, .9], num_threads=5, top_k=200)
+    args = parser.parse_args()
+
+    matrix_file = args.matrix_file
     network_name = matrix_file[matrix_file.find("/") + 1:matrix_file.find(".")]
-    alphas = [.01, .1, .25, .5, .9]
     kwargs = dict(num_threads=5, top_k=200, max_dim=5)
 
-    build_cache(db_file, matrix_file, network_name, alphas, **kwargs)
+    build_cache(args.db_file, matrix_file, network_name, args.alphas, **kwargs)
