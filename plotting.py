@@ -3,18 +3,13 @@ import itertools
 import matplotlib as plt
 
 db_file = "Cache/proximity_vectors.sqlite3"
+base_out = "Results/"
 
-def plot_all_cache_size():
-    for alpha in [.01, .1, .25]:
-        for query_size in [10, 50, 200]:
-            plot_cache_size(alpha, query_size)
-
-def plot_cache_size(alpha, query_size):
-    cache_sizes = [10, 100, 1000]
+def generic_line_plot(xlabel="Cache Size", ylabel= "Number of Iterations", title = "")
 
 
-def plot_alpha():
-    return None
+def make_all_plots():
+	plot_alphas()
+	plot_cache_sizes()
+	plot_query_sizes()
 
-def plot_query_size():
-    return None
