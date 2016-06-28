@@ -1,5 +1,6 @@
 import generate_results as gr
 import itertools
+import matplotlib as plt
 
 db_file = "Cache/proximity_vectors.sqlite3"
 
@@ -10,6 +11,7 @@ def plot_all_cache_size():
 
 def plot_cache_size(alpha, query_size):
     cache_sizes = [10, 100, 1000]
+
 
 def plot_alpha():
     return None
