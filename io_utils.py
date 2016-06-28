@@ -75,8 +75,6 @@ def get_num_iterations(db_file, alpha=None, query_size=None, cache_size=None, no
     if(len(clauses) > 0):
         query += ' WHERE ' + ' AND '.join(x for x in clauses) + ';'
 
-    print(query)
-
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute(query)

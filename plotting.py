@@ -9,7 +9,7 @@ def plot_all_cache_size():
             plot_cache_size(alpha, query_size)
 
 def plot_cache_size(alpha, query_size):
-    return None
+    cache_sizes = [10, 100, 1000]
 
 def plot_alpha():
     return None

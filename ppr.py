@@ -46,12 +46,12 @@ def total_sum_cached_start_vector(cached_vectors):
     entries = {}
     for fn in cached_vectors.keys():
         for sn in cached_vectors[fn].keys():
-            value = cached_vectors[fn][sn]
-            entries[sn] = (value + (entries[sn] if sn in entries else 0.0))
+            value = float(cached_vectors[fn][sn])
+            entries[sn] = (value + (float(entries[sn]) if sn in entries else 0.0))
 
     total_sum = sum(entries.values())
     for fn in entries.keys():
-        entries[fn] = entries[fn] / total_sum
+        entries[fn] = float(entries[fn]) / total_sum
     return entries
 
 def twice_normalized_cached_start_vector(cached_vectors):
@@ -59,12 +59,12 @@ def twice_normalized_cached_start_vector(cached_vectors):
     for fn in cached_vectors.keys():
         node_sum = sum(cached_vectors[fn].values())
         for sn in cached_vectors[fn].keys():
-            value = cached_vectors[fn][sn] / node_sum
-            entries[sn] = (value + (entries[sn] if sn in entries else 0.0))
+            value = float(cached_vectors[fn][sn]) / node_sum
+            entries[sn] = (value + (float(entries[sn]) if sn in entries else 0.0))
 
     total_sum = sum(entries.values())
     for fn in entries.keys():
-        entries[fn] = entries[fn] / total_sum
+        entries[fn] = float(entries[fn]) / total_sum
     return entries
 
 
