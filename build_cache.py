@@ -27,7 +27,7 @@ def build_cache(db_file, matrix_file, network_name, alphas, num_threads=5, top_k
 
 
 def save_proximity_vector(db_file, weight_matrix, network_name, node_id, alpha_id, alpha_value, top_k):
-    proximity_vector, iterations = ppr.generic_ppr(weight_matrix, [node_id], alpha_value)
+    proximity_vector, iterations, error_terms = ppr.standard_ppr(weight_matrix, [node_id], alpha_value)
 
     index_value_tuples = ppr.get_top_k_index_value_tuples(proximity_vector, top_k)
 
@@ -102,7 +102,6 @@ def initialize_database(db_file, schemas):
     for table in schemas.keys():
         schema_columns = ", ".join("%s %s" % x for x in schemas[table])
         command = 'create table if not exists %s (%s)' % (table, schema_columns)
-        print(command)
         c.execute(command)
 
     conn.commit()
