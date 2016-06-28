@@ -28,27 +28,43 @@ def build_cached_start_vector(dimension, cached_vectors, norm_method=None):
     normalization_dict = {"total_sum" : total_sum_cached_start_vector, "twice_normalized" : twice_normalized_cached_start_vector}
     normalization_function = normalization_dict.get(norm_method, unnormalized_cached_start_vector)
     entries = normalization_function(cached_vectors)
+    vector_entries = {(key,0) : entries[key] for key in entries.keys()}
 
-    matrix = dok_matrix((dimension,1))
-    matrix.update(entries)
-    return matrix.tocsr()
+    start_vector = dok_matrix((dimension,1))
+    start_vector.update(vector_entries)
+    return start_vector.tocsr()
 
 
 def unnormalized_cached_start_vector(cached_vectors):
     entries = {}
-
+    for fn in cached_vectors.keys():
+        for sn in cached_vectors[fn].keys():
+            entries[sn] = (cached_vectors[fn][sn] + (entries[sn] if sn in entries else 0.0))
     return entries
 
 def total_sum_cached_start_vector(cached_vectors):
     entries = {}
+    for fn in cached_vectors.keys():
+        for sn in cached_vectors[fn].keys():
+            value = cached_vectors[fn][sn]
+            entries[sn] = (value + (entries[sn] if sn in entries else 0.0))
 
-
+    total_sum = sum(entries.values())
+    for fn in entries.keys():
+        entries[fn] /= total_sum
     return entries
 
 def twice_normalized_cached_start_vector(cached_vectors):
     entries = {}
+    for fn in cached_vectors.keys():
+        node_sum = sum(cached_vectors[fn].values())
+        for sn in cached_vectors[fn].keys():
+            value = cached_vectors[fn][sn] / node_sum
+            entries[sn] = (value + (entries[sn] if sn in entries else 0.0))
 
-
+    total_sum = sum(entries.values())
+    for fn in entries.keys():
+        entries[fn] /= total_sum
     return entries
 
 
@@ -61,7 +77,7 @@ def get_restart_vector(dimension,query_nodes):
 
 def ppr(weight_matrix, start_vector, restart_vector, alpha):
 
-    eps = .00001
+    eps = 1E-5
     max_iter = 10000
 
     iterations = 0

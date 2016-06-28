@@ -19,12 +19,40 @@ def load_cached_vectors(db_file, query_nodes, alpha, cache_size):
         for second_node, score in c.fetchall():
             cached_vectors[q][second_node] = score
 
-
     conn.commit()
     conn.close()
 
     return cached_vectors
 
 
+def get_closest_alpha_id(db_file, alpha):
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+    c.execute('SELECT alpha_id FROM alpha_ids ORDER BY ABS( alpha - %s) ASC LIMIT 1' % str(alpha))
+    alpha_id, = c.fetchone()
+    conn.commit()
+    conn.close()
+    return alpha_id
+
+
+def get_network_name(matrix_file):
+    return matrix_file[matrix_file.find("/") + 1:matrix_file.find(".")]
+
+
 def read_csr_matrix(filename):
     return spio.loadmat(filename)["normalizedNetwork"]
+
+
+def save_results(db_file, results_generator):
+
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+
+    for result in results_generator:
+        result[0] = get_network_name(result[0])
+        result[3] = get_closest_alpha_id(db_file, result[3])
+        result[5] = (result[5] if result[5] else "Unnormalized")
+        c.execute('INSERT OR IGNORE INTO results VALUES (?,?,?,?,?,?,?,?)', result)
+
+    conn.commit()
+    conn.close()
