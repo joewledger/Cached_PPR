@@ -52,7 +52,7 @@ def save_results(db_file, results_generator):
         result[0] = get_network_name(result[0])
         result[3] = get_closest_alpha_id(db_file, result[3])
         result[5] = (result[5] if result[5] else "Unnormalized")
-        c.execute('INSERT OR IGNORE INTO results VALUES (?,?,?,?,?,?,?,?)', result)
+        c.execute('INSERT INTO results VALUES (?,?,?,?,?,?,?,?)', result)
         conn.commit()
     conn.close()
 
