@@ -75,7 +75,7 @@ def get_restart_vector(dimension,query_nodes):
     matrix.update(entries)
     return matrix.tocsr()
 
-def ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
+def ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-5):
 
     max_iter = 10000
 
