@@ -56,3 +56,31 @@ def save_results(db_file, results_generator):
 
     conn.commit()
     conn.close()
+
+
+def get_num_iterations(db_file, alpha=None, query_size=None, cache_size=None, norm_method=None):
+
+    query = 'SELECT num_iterations FROM results'
+    clauses = []
+    if(alpha):
+        alpha_id = get_closest_alpha_id(db_file, alpha)
+        clauses.append('alpha_id = %d' % alpha_id)
+    if(query_size):
+        clauses.append('query_size = %d' % query_size)
+    if(cache_size):
+        clauses.append('cache_size = %d' % cache_size)
+    if(norm_method):
+        clauses.append('norm_type = "%s"' % norm_method)
+
+    if(len(clauses) > 0):
+        query += ' WHERE ' + ' AND '.join(x for x in clauses) + ';'
+
+    print(query)
+
+    conn = sqlite3.connect(db_file)
+    c = conn.cursor()
+    c.execute(query)
+    results = [x[0] for x in c.fetchall()]
+    conn.close()
+
+    return results

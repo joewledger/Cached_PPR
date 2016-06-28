@@ -51,7 +51,7 @@ def total_sum_cached_start_vector(cached_vectors):
 
     total_sum = sum(entries.values())
     for fn in entries.keys():
-        entries[fn] /= total_sum
+        entries[fn] = entries[fn] / total_sum
     return entries
 
 def twice_normalized_cached_start_vector(cached_vectors):
@@ -64,7 +64,7 @@ def twice_normalized_cached_start_vector(cached_vectors):
 
     total_sum = sum(entries.values())
     for fn in entries.keys():
-        entries[fn] /= total_sum
+        entries[fn] = entries[fn] / total_sum
     return entries
 
 
@@ -75,9 +75,8 @@ def get_restart_vector(dimension,query_nodes):
     matrix.update(entries)
     return matrix.tocsr()
 
-def ppr(weight_matrix, start_vector, restart_vector, alpha):
+def ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
 
-    eps = 1E-5
     max_iter = 10000
 
     iterations = 0

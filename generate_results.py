@@ -18,9 +18,7 @@ def generate_parameter_combinations():
     return [x for x in itertools.product(*all_params)]
 
 
-def generate_cached_ppr_results():
-
-    num_permutations = 10
+def generate_cached_ppr_results(num_permutations=10):
 
     matrix_file = "Data/Email-Enron.mat"
     db_file = "Cache/proximity_vectors.sqlite3"
