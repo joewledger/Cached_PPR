@@ -53,7 +53,7 @@ def generate_standard_ppr_results(matrix_file, weight_matrix, query_sets):
 
 if __name__ == '__main__':
 
-    num_permutations = 1
+    num_permutations = 10
 
     matrix_file = "Data/Email-Enron.mat"
     db_file = "Cache/proximity_vectors.sqlite3"
