@@ -59,7 +59,7 @@ if __name__ == '__main__':
     db_file = "Cache/proximity_vectors.sqlite3"
     weight_matrix = io_utils.read_csr_matrix(matrix_file)
 
-    query_sets = generate_query_sets(200, weight_matrix.shape[0], num_permutations)
+    query_sets = generate_query_sets(200, weight_matrix.shape[0], 1)
 
     cached_results = generate_cached_ppr_results(matrix_file, weight_matrix, query_sets)
     io_utils.save_results(db_file, cached_results)
