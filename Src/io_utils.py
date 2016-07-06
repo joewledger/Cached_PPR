@@ -60,7 +60,8 @@ class DBWrapper:
         raise NotImplementedError
 
     def get_alpha_mapping_and_update_table(self, alphas, threshold=.001):
-        raise NotImplementedError
+        tuples = [self.get_closest_alpha_tuple_and_update_table(alpha) for alpha in alphas]
+        return {t[0]: t[1] for t in tuples}
 
     def get_closest_alpha_tuple(self, alpha):
         raise NotImplementedError
@@ -86,6 +87,11 @@ class DBWrapper:
     def get_proximity_vector_filepaths(self):
         raise NotImplementedError
 
+    def add_proximity_vector_filepath(self, network_filepath, first_node, alpha_id, proximity_filepath, vector_length):
+        query = "INSERT OR IGNORE INTO proximity_vectors VALUES (?,?,?,?,?)"
+        self.cursor.execute(query, (network_filepath, first_node, alpha_id, proximity_filepath, vector_length))
+        self.connection.commit()
+
     def update_proximity_vector_filepaths(self, network_filepath, query_node_to_proximity_vector_filepath, alpha_id, vector_length):
         query = "INSERT OR IGNORE INTO proximity_vectors VALUES (?,?,?,?,?)"
 
@@ -93,8 +99,6 @@ class DBWrapper:
         nodes = list(query_node_to_proximity_vector_filepath.keys())
 
         entries = [(network_filepath, first_node, alpha_id, proximity_filepath(first_node), vector_length) for first_node in nodes]
-
-        print(entries)
 
         self.cursor.executemany(query, entries)
         self.connection.commit()

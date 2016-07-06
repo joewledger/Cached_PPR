@@ -1,27 +1,38 @@
 import ppr
 import argparse
 import io_utils
+import itertools
+from joblib import Parallel, delayed
 
 
-def build_cache(network_filepath, db_filepath, alphas, num_threads=5, top_k=200, max_dim=None, cache_subdir="Cache/"):
+def build_cache(network_filepath, db_filepath, alphas, num_threads=5, top_k=200, cache_subdir="Cache/", subset_size=None):
     weight_matrix = io_utils.load_csr_matrix(network_filepath)
     dimension = weight_matrix.shape[0]
-    if(max_dim):
-        dimension = min(dimension, max_dim)
 
     db_wrapper = io_utils.DBWrapper(db_filepath)
     db_wrapper.open_connection()
     db_wrapper.initialize_all_tables()
+    proximity_filepaths = db_wrapper.get_unique_proximity_filepaths(count=dimension * len(alphas), path_prefix=cache_subdir)
+    alpha_mapping = db_wrapper.get_alpha_mapping_and_update_table(alphas)
+    db_wrapper.close_connection()
+    alpha_ids = list(alpha_mapping.keys())
 
-    for alpha in alphas:
-        alpha_id = db_wrapper.get_closest_alpha_tuple_and_update_table(alpha)[0]
+    parameters = zip(proximity_filepaths, *[itertools.product(range(dimension), alpha_ids)])
+    results = Parallel(n_jobs=num_threads)(delayed(compute_and_save_proximity_vector)
+                      (weight_matrix, alpha_mapping, p, top_k) for p in parameters)
 
-        proximity_filepaths = db_wrapper.get_unique_proximity_filepaths(count=dimension, path_prefix=cache_subdir)
-        proximity_vectors = {i: ppr.get_proximity_vector(weight_matrix, i, alpha, top_k=top_k) for i in range(0, dimension)}
-        query_node_to_proximity_filepath = {i: proximity_filepaths[i] for i in list(proximity_vectors.keys())}
-        for index, vector in proximity_vectors.items():
-            io_utils.pickle_proximity_vector(proximity_filepaths[index], vector)
-        db_wrapper.update_proximity_vector_filepaths(network_filepath, query_node_to_proximity_filepath, alpha_id, dimension)
+    db_wrapper.open_connection()
+    for query_node, alpha_id, proximity_filepath in results:
+        db_wrapper.add_proximity_vector_filepath(network_filepath, query_node, alpha_id, proximity_filepath, dimension)
+    db_wrapper.close_connection()
+
+def compute_and_save_proximity_vector(weight_matrix, alpha_mapping, params, k):
+    proximity_filepath, param_tuple = params
+    query_node, alpha_id = param_tuple
+    proximity_vector = ppr.get_proximity_vector(weight_matrix, query_node, alpha_mapping[alpha_id], top_k=k)
+    io_utils.pickle_proximity_vector(proximity_filepath, proximity_vector)
+    return (query_node, alpha_id, proximity_filepath)
+
 
 
 if __name__ == "__main__":
@@ -32,12 +43,11 @@ if __name__ == "__main__":
     parser.add_argument('--alphas', type=float, nargs='+')
     parser.add_argument('--num_threads', type=int)
     parser.add_argument('--top_k', type=int)
-    parser.add_argument('--max_dim', type=int)
     parser.add_argument('--cache_subdir', type=str)
     parser.set_defaults(db_filepath="Cache/proximity_vectors.sqlite3", network_filepath="Data/Email-Enron.mat",
                         alphas=[.01, .1, .25], num_threads=5, top_k=200, cache_subdir="Cache/")
     args = parser.parse_args()
 
-    kwargs = dict(num_threads=args.num_threads, top_k=args.top_k, max_dim=args.max_dim, cache_subdir=args.cache_subdir)
+    kwargs = dict(num_threads=args.num_threads, top_k=args.top_k, cache_subdir=args.cache_subdir)
 
     build_cache(args.network_filepath, args.db_filepath, args.alphas, **kwargs)

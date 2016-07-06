@@ -1,4 +1,3 @@
-
 from scipy.sparse import *
 from scipy.sparse.linalg import *
 import numpy as np
