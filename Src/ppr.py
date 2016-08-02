@@ -19,11 +19,10 @@ def standard_ppr(weight_matrix, query_nodes, alpha):
     return ppr(weight_matrix, start_vector, restart_vector, alpha)
 
 
-# cached_vectors = {first_node -> vector}
-def cached_ppr(weight_matrix, query_nodes, vector_cache, cache_size, alpha, norm_method=sv.unnormalized_start_vector):
+def cached_ppr(weight_matrix, query_nodes, vector_cache, cache_size, alpha, norm_method=sv.unnormalized):
     dimension = weight_matrix.shape[0]
 
-    vector_list = vector_cache.get_vector_list(query_nodes, alpha, cache_size)
+    vector_list = vector_cache.get_vector_list(query_nodes, alpha, cache_size=cache_size)
     start_vector = norm_method(vector_list)
     restart_vector = get_restart_vector(dimension, query_nodes)
 
@@ -66,18 +65,16 @@ def calculate_next_vector(weight_matrix, curr_vector, restart_vector, alpha):
 
 def trim_vector(vector, k):
     data = vector.toarray().flatten()
-    indices = np.argsort(data)[-k:]
+    ind = np.argpartition(data, -k)[-k:]
     matrix = dok_matrix(vector.shape)
-    entries = {(index, 0): data[index] for index in indices}
+    entries = {(i, 0): data[i] for i in ind}
     matrix.update(entries)
     return matrix.tocsr()
 
 
-def get_proximity_vector(weight_matrix, query_node, alpha, eps=1E-10, top_k=None):
+def get_proximity_vector(weight_matrix, query_node, alpha, eps=1E-10):
     dimension = weight_matrix.shape[0]
     restart_vector = get_restart_vector(dimension, [query_node])
     start_vector = restart_vector.copy()
     proximity_vector = ppr(weight_matrix, start_vector, restart_vector, alpha, eps=eps).final_vector
-    if(top_k):
-        proximity_vector = limit_vector_top_k(proximity_vector, top_k)
     return proximity_vector

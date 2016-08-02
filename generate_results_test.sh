@@ -1,1 +1,1 @@
-python Src/generate_results.py --network_filepath Data/test.mtx --query_sizes 2 5 10
+python Src/generate_results.py --network_filepath Data/test.mtx --query_sizes 10 20 50 --cache_sizes 10 20 50 --save_file "Results/test.txt"
