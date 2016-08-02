@@ -21,25 +21,10 @@ def standard_ppr(weight_matrix, query_nodes, alpha):
 
 # cached_vectors = {first_node -> vector}
 def cached_ppr(weight_matrix, vector_cache, alpha, norm_method=sv.unnormalized_start_vector):
-    dimension = weight_matrix.shape[0]
+    #dimension = weight_matrix.shape[0]
 
     start_vector = norm_method(vector_cache)
-
     return ppr(weight_matrix, start_vector, restart_vector, alpha)
-
-
-# cached_vectors = {first_node -> vector}
-def build_cached_start_vector(dimension, cached_vectors, norm_method=None):
-    normalization_dict = {"total_sum": total_sum_cached_start_vector,
-                          "twice_normalized": twice_normalized_cached_start_vector}
-    normalization_function = normalization_dict.get(
-        norm_method, unnormalized_cached_start_vector)
-    entries = normalization_function(cached_vectors)
-    vector_entries = {(key, 0): entries[key] for key in entries.keys()}
-
-    start_vector = dok_matrix((dimension, 1))
-    start_vector.update(vector_entries)
-    return start_vector.tocsr()
 
 
 def get_restart_vector(dimension, query_nodes):
