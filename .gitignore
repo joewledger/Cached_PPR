@@ -1,10 +1,12 @@
 *__pycache__*
 .idea/
 Cache/
-Data/
+Data/*
+!Data/Email-Enron.mat
 Example_Code/
 Papers/
-Results/
+Results/*
+!Results/empty
 Plots/
 Perm_Results/
 Presentations/
