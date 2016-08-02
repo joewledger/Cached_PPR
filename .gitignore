@@ -3,6 +3,7 @@
 Cache/
 Data/*
 !Data/Email-Enron.mat
+!Data/test.mtx
 Example_Code/
 Papers/
 Results/*
