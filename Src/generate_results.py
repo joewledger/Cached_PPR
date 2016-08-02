@@ -25,7 +25,7 @@ def generate_vector_cache(weight_matrix, query_sets, alphas):
     cache = vector_cache.vector_cache()
     for query_node, alpha in itertools.product(all_query_nodes, alphas):
         logger = open("Results/log.txt", "a+")
-        logger.log("%d\t%.2f\n" % (query_node, alpha))
+        logger.write("%d\t%.2f\n" % (query_node, alpha))
         logger.close()
         vector = ppr.get_proximity_vector(weight_matrix, query_node, alpha)
         cache.insert_vector(query_node, alpha, vector)
