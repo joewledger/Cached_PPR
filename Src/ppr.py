@@ -20,10 +20,13 @@ def standard_ppr(weight_matrix, query_nodes, alpha):
 
 
 # cached_vectors = {first_node -> vector}
-def cached_ppr(weight_matrix, vector_cache, alpha, norm_method=sv.unnormalized_start_vector):
-    #dimension = weight_matrix.shape[0]
+def cached_ppr(weight_matrix, query_nodes, vector_cache, alpha, norm_method=sv.unnormalized_start_vector):
+    dimension = weight_matrix.shape[0]
 
-    start_vector = norm_method(vector_cache)
+    vector_list = [vector_cache.get_vector(node_id, alpha) for node_id in query_set]
+    start_vector = norm_method(vector_list)
+    restart_vector = get_restart_vector(dimension, query_nodes)
+
     return ppr(weight_matrix, start_vector, restart_vector, alpha)
 
 
