@@ -2,6 +2,16 @@ from scipy.sparse import *
 from scipy.sparse.linalg import *
 import numpy as np
 
+import start_vectors as sv
+
+
+class PPR_Result:
+
+    def __init__(self, final_vector, num_iterations, error_terms):
+        self.final_vector = final_vector
+        self.num_iterations = num_iterations
+        self.error_terms = error_terms
+
 
 def standard_ppr(weight_matrix, query_nodes, alpha):
     restart_vector = get_restart_vector(weight_matrix.shape[0], query_nodes)
@@ -9,19 +19,16 @@ def standard_ppr(weight_matrix, query_nodes, alpha):
     return ppr(weight_matrix, start_vector, restart_vector, alpha)
 
 
-# cached_vectors = {first_node -> {second_node -> score}}
-def cached_ppr(weight_matrix, cached_vectors, alpha, norm_method="total_sum"):
+# cached_vectors = {first_node -> vector}
+def cached_ppr(weight_matrix, vector_cache, alpha, norm_method=sv.unnormalized_start_vector):
     dimension = weight_matrix.shape[0]
 
-    start_vector = build_cached_start_vector(
-        dimension, cached_vectors, norm_method=norm_method)
-    restart_vector = get_restart_vector(dimension, list(cached_vectors.keys()))
+    start_vector = norm_method(vector_cache)
 
     return ppr(weight_matrix, start_vector, restart_vector, alpha)
 
 
-# cached_vectors = {first_node -> {second_node -> score}}
-# returns a matrix
+# cached_vectors = {first_node -> vector}
 def build_cached_start_vector(dimension, cached_vectors, norm_method=None):
     normalization_dict = {"total_sum": total_sum_cached_start_vector,
                           "twice_normalized": twice_normalized_cached_start_vector}
@@ -33,42 +40,6 @@ def build_cached_start_vector(dimension, cached_vectors, norm_method=None):
     start_vector = dok_matrix((dimension, 1))
     start_vector.update(vector_entries)
     return start_vector.tocsr()
-
-
-def unnormalized_cached_start_vector(cached_vectors):
-    entries = {}
-    for fn in cached_vectors.keys():
-        for sn in cached_vectors[fn].keys():
-            entries[sn] = (cached_vectors[fn][sn] + (entries[sn] if sn in entries else 0.0))
-    return entries
-
-
-def total_sum_cached_start_vector(cached_vectors):
-    entries = {}
-    for fn in cached_vectors.keys():
-        for sn in cached_vectors[fn].keys():
-            value = float(cached_vectors[fn][sn])
-            entries[sn] = (value + (float(entries[sn])
-                                    if sn in entries else 0.0))
-
-    total_sum = float(sum(entries.values()))
-    for fn in entries.keys():
-        entries[fn] = float(entries[fn]) / total_sum
-    return entries
-
-
-def twice_normalized_cached_start_vector(cached_vectors):
-    entries = {}
-    for fn in cached_vectors.keys():
-        node_sum = sum(cached_vectors[fn].values())
-        for sn in cached_vectors[fn].keys():
-            value = float(cached_vectors[fn][sn]) / node_sum
-            entries[sn] = (value + (float(entries[sn]) if sn in entries else 0.0))
-
-    total_sum = float(sum(entries.values()))
-    for fn in entries.keys():
-        entries[fn] = float(entries[fn]) / total_sum
-    return entries
 
 
 def get_restart_vector(dimension, query_nodes):
@@ -94,7 +65,7 @@ def ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
         error_terms.append(get_l1_norm(curr_vector, prev_vector))
         iterations += 1
 
-    return curr_vector, iterations, error_terms[1:]
+    return PPR_Result(curr_vector, iterations, error_terms[1:])
 
 
 def get_l1_norm(current_vector, previous_vector):
@@ -103,19 +74,6 @@ def get_l1_norm(current_vector, previous_vector):
 
 def calculate_next_vector(weight_matrix, curr_vector, restart_vector, alpha):
     return (1 - alpha) * weight_matrix.dot(curr_vector) + alpha * restart_vector
-
-
-def get_top_k_index_value_tuples(final_vector, k):
-    data = final_vector.toarray().flatten()
-    indices = np.argsort(data)[-k:]
-    return [(int(indices[i]), data[indices[i]]) for i in range(0, k)]
-
-
-def print_top_k_indices_and_scores(final_vector, k):
-    data = final_vector.toarray().flatten()
-    indices = np.argsort(data)[-k:]
-    for index in indices:
-        print(index, final_vector[index, 0])
 
 
 def limit_vector_top_k(vector, k):
@@ -131,7 +89,7 @@ def get_proximity_vector(weight_matrix, query_node, alpha, eps=1E-10, top_k=None
     dimension = weight_matrix.shape[0]
     restart_vector = get_restart_vector(dimension, [query_node])
     start_vector = restart_vector.copy()
-    curr_vector, iterations, error_terms = ppr(weight_matrix, start_vector, restart_vector, alpha, eps=eps)
+    proximity_vector = ppr(weight_matrix, start_vector, restart_vector, alpha, eps=eps).final_vector
     if(top_k):
-        curr_vector = limit_vector_top_k(curr_vector, top_k)
-    return curr_vector
+        proximity_vector = limit_vector_top_k(proximity_vector, top_k)
+    return proximity_vector

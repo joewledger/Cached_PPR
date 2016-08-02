@@ -1,0 +1,1 @@
+python Src/generate_results.py --network_filepath Data/test.mtx --query_sizes 2 5 10

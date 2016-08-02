@@ -1,1 +1,0 @@
-python Src/build_cache.py --db_filepath Cache/test.sqlite3 --network_filepath Data/test.mtx --cache_subdir Cache/Test/
