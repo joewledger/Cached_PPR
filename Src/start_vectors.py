@@ -1,11 +1,14 @@
 
 def unnormalized_start_vector(vector_list):
-    return None
+    return sum(vector_list)
 
 
-def total_sum_cached_start_vector(vector_list):
-    return None
+def total_sum_vector(vector_list):
+    vector = sum(vector_list)
+    return vector / vector.sum()
 
 
-def twice_normalized_cached_start_vector(vector_list):
-    return None
+def twice_normalized_vector(vector_list):
+    normalized_vectors = [v / v.sum() for v in vector_list]
+    vector = sum(normalized_vectors)
+    return vector / vector.sum()

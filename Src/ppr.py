@@ -20,10 +20,10 @@ def standard_ppr(weight_matrix, query_nodes, alpha):
 
 
 # cached_vectors = {first_node -> vector}
-def cached_ppr(weight_matrix, query_nodes, vector_cache, alpha, norm_method=sv.unnormalized_start_vector):
+def cached_ppr(weight_matrix, query_nodes, vector_cache, cache_size, alpha, norm_method=sv.unnormalized_start_vector):
     dimension = weight_matrix.shape[0]
 
-    vector_list = [vector_cache.get_vector(node_id, alpha) for node_id in query_set]
+    vector_list = vector_cache.get_vector_list(query_nodes, alpha, cache_size)
     start_vector = norm_method(vector_list)
     restart_vector = get_restart_vector(dimension, query_nodes)
 
@@ -64,7 +64,7 @@ def calculate_next_vector(weight_matrix, curr_vector, restart_vector, alpha):
     return (1 - alpha) * weight_matrix.dot(curr_vector) + alpha * restart_vector
 
 
-def limit_vector_top_k(vector, k):
+def trim_vector(vector, k):
     data = vector.toarray().flatten()
     indices = np.argsort(data)[-k:]
     matrix = dok_matrix(vector.shape)

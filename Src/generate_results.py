@@ -32,15 +32,11 @@ def generate_vector_cache(weight_matrix, query_sets, alphas):
 def ppr_results(weight_matrix, cache, query_sets, query_sizes, alphas, cache_sizes, methods, num_threads):
     for query_set in query_sets:
         for query_size, alpha, cache_size in itertools.product(*[query_sizes, alphas, cache_sizes]):
+            print("Hello")
 
 
 def plot_results():
     return None
-
-
-def cached_ppr_results(weight_matrix, cached_vectors, alpha, cache_size, norm_method):
-    methods = {1: None, 2: "total_sum", 3: "twice_normalized"}
-    return ppr.cached_ppr(weight_matrix, cached_vectors, alpha, norm_method=methods[norm_method])
 
 
 if __name__ == '__main__':
