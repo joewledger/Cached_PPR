@@ -1,6 +1,7 @@
 from scipy.sparse import *
 from scipy.sparse.linalg import *
 import numpy as np
+import math
 
 import start_vectors as sv
 
@@ -53,6 +54,28 @@ def ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
         iterations += 1
 
     return PPR_Result(curr_vector, iterations, error_terms[1:])
+
+
+def chebyshev_ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
+    dimension = weight_matrix.shape[0]
+
+    c = .5
+    muPPrevious = 1.0
+    muPrevious = 1.0 / (1.0 - c)
+    mu = 0.
+
+    iterations = 0
+    error_terms = [1.0]
+    myK = (2.0 - c) / c
+    myXi = (math.sqrt(myK) - 1.0) / (math.sqrt(myK) + 1.0)
+
+    mPPreviousScore = dok_matrix((dimension, 1))
+    mPreviousScore = dok_matrix((dimension, 1))
+    mPreviousScore.update({()})
+    return None
+
+
+
 
 
 def get_l1_norm(current_vector, previous_vector):

@@ -122,12 +122,12 @@ def get_max_and_min(summary_dict):
 
 
 if __name__ == "__main__":
-    datafile = "Results/test.txt"
-    save_dir = "Plots/Test/"
+    datafile = "Results/out.txt"
+    save_dir = "Plots/Full/"
 
     results_dict = read_results_dict(datafile)
     summary_dict = get_summary_dict(results_dict)
 
-    #plot_alpha(save_dir, summary_dict)
-    #plot_query_size(save_dir, summary_dict)
+    plot_alpha(save_dir, summary_dict)
+    plot_query_size(save_dir, summary_dict)
     plot_cache_size(save_dir, summary_dict)

@@ -1,4 +1,5 @@
 import ppr
+import itertools
 
 
 class vector_cache:
@@ -6,6 +7,12 @@ class vector_cache:
     def __init__(self):
         self.cache = {}
         self.trimmed_cache = {}
+
+    def build_cache(self, weight_matrix, query_sets, alphas):
+        all_query_nodes = set(itertools.chain(*query_sets))
+        for query_node, alpha in itertools.product(all_query_nodes, alphas):
+            vector = ppr.get_proximity_vector(weight_matrix, query_node, alpha)
+            self.insert_vector(query_node, alpha, vector)
 
     def get_vector(self, node_id, alpha):
         encoded_alpha = self.encode_alpha(alpha)
