@@ -14,10 +14,65 @@ class PPR_Result:
         self.error_terms = error_terms
 
 
-def standard_ppr(weight_matrix, query_nodes, alpha):
+def ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
+    max_iter = 10000
+
+    iterations = 0
+    curr_vector = start_vector.copy()
+
+    error_terms = [1.0]
+
+    while(error_terms[-1] > eps and iterations < max_iter):
+
+        prev_vector = curr_vector.copy()
+        curr_vector = calculate_next_vector(weight_matrix, curr_vector, restart_vector, alpha)
+        error_terms.append(get_l1_norm(curr_vector, prev_vector))
+        iterations += 1
+
+    return PPR_Result(curr_vector, iterations, error_terms[1:])
+
+
+def chebyshev_ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
+    max_iter = 10000
+    dimension = weight_matrix.shape[0]
+
+    c = .5
+    muPPrevious = 1.0
+    muPrevious = 1.0 / (1.0 - c)
+    mu = 0.0
+
+    iterations = 0
+    error_terms = [1.0]
+    #myK = (2.0 - c) / c
+    #myXi = (math.sqrt(myK) - 1.0) / (math.sqrt(myK) + 1.0)
+
+    mScore = zeroes_vector(dimension)
+    mPPreviousScore = zeroes_vector(dimension)
+    mPreviousScore = start_vector / 2
+
+    while(error_terms[-1] > eps and iterations < max_iter):
+        mPPreviousScore = mPreviousScore
+        mPreviousScore = mScore
+
+        muPPrevious = muPrevious
+        muPrevious = mu
+
+        mu = 2.0 / (1.0 - c) * muPrevious - muPPrevious
+        first_product = 2.0 * (muPrevious / mu) * weight_matrix.dot(mPreviousScore)
+        second_product = (muPPrevious / mu) * mPPreviousScore
+        third_product = (2.0 * muPrevious) / ((1.0 - c) * mu) * c * restart_vector
+        mScore = first_product - second_product + third_product
+
+        error_terms.append(get_l1_norm(mScore, mPreviousScore))
+        iterations += 1
+
+    return PPR_Result(mScore / mScore.sum(), iterations, error_terms)
+
+
+def standard_ppr(weight_matrix, query_nodes, alpha, ppr_method=ppr):
     restart_vector = get_restart_vector(weight_matrix.shape[0], query_nodes)
     start_vector = restart_vector.copy()
-    return ppr(weight_matrix, start_vector, restart_vector, alpha)
+    return ppr_method(weight_matrix, start_vector, restart_vector, alpha)
 
 
 def cached_ppr(weight_matrix, query_nodes, vector_cache, cache_size, alpha, norm_method=sv.unnormalized):
@@ -38,44 +93,8 @@ def get_restart_vector(dimension, query_nodes):
     return matrix.tocsr()
 
 
-def ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
-    max_iter = 10000
-
-    iterations = 0
-    curr_vector = start_vector.copy()
-
-    error_terms = [1.0]
-
-    while(error_terms[-1] > eps and iterations < max_iter):
-
-        prev_vector = curr_vector.copy()
-        curr_vector = calculate_next_vector(weight_matrix, curr_vector, restart_vector, alpha)
-        error_terms.append(get_l1_norm(curr_vector, prev_vector))
-        iterations += 1
-
-    return PPR_Result(curr_vector, iterations, error_terms[1:])
-
-
-def chebyshev_ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
-    dimension = weight_matrix.shape[0]
-
-    c = .5
-    muPPrevious = 1.0
-    muPrevious = 1.0 / (1.0 - c)
-    mu = 0.
-
-    iterations = 0
-    error_terms = [1.0]
-    myK = (2.0 - c) / c
-    myXi = (math.sqrt(myK) - 1.0) / (math.sqrt(myK) + 1.0)
-
-    mPPreviousScore = dok_matrix((dimension, 1))
-    mPreviousScore = dok_matrix((dimension, 1))
-    mPreviousScore.update({()})
-    return None
-
-
-
+def zeroes_vector(row_dim):
+    return csr_matrix((row_dim, 1))
 
 
 def get_l1_norm(current_vector, previous_vector):

@@ -1,4 +1,5 @@
 import scipy.io as spio
+import numpy as np
 
 
 def load_csr_matrix(filename):
@@ -6,3 +7,11 @@ def load_csr_matrix(filename):
         return spio.loadmat(filename)["normalizedNetwork"]
     elif(filename[-4:] == ".mtx"):
         return spio.mmread(filename)
+
+
+def print_vector_acsending(vector, k):
+    data = vector.toarray().flatten()
+    ind = np.argpartition(data, -k)[-k:]
+    ind = sorted(ind, key=lambda i: data[i])
+    output = "\n".join("(%d, 0)\t%.8f" % (i, data[i]) for i in ind)
+    print(output)
