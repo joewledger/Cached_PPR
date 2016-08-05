@@ -4,7 +4,7 @@ import scipy.io as spio
 from sklearn.preprocessing import normalize
 import sys
 
-size = 100
+size = 1000
 savefile = sys.argv[1]
 
 connections = set()
