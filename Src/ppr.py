@@ -36,19 +36,16 @@ def chebyshev_ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10)
     max_iter = 10000
     dimension = weight_matrix.shape[0]
 
-    c = .5
     muPPrevious = 1.0
-    muPrevious = 1.0 / (1.0 - c)
+    muPrevious = 1.0 / (1.0 - alpha)
     mu = 0.0
 
     iterations = 0
     error_terms = [1.0]
-    #myK = (2.0 - c) / c
-    #myXi = (math.sqrt(myK) - 1.0) / (math.sqrt(myK) + 1.0)
 
     mScore = zeroes_vector(dimension)
     mPPreviousScore = zeroes_vector(dimension)
-    mPreviousScore = start_vector / 2
+    mPreviousScore = start_vector
 
     while(error_terms[-1] > eps and iterations < max_iter):
         mPPreviousScore = mPreviousScore
@@ -57,10 +54,10 @@ def chebyshev_ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10)
         muPPrevious = muPrevious
         muPrevious = mu
 
-        mu = 2.0 / (1.0 - c) * muPrevious - muPPrevious
+        mu = 2.0 / (1.0 - alpha) * muPrevious - muPPrevious
         first_product = 2.0 * (muPrevious / mu) * weight_matrix.dot(mPreviousScore)
         second_product = (muPPrevious / mu) * mPPreviousScore
-        third_product = (2.0 * muPrevious) / ((1.0 - c) * mu) * c * restart_vector
+        third_product = (2.0 * muPrevious) / ((1.0 - alpha) * mu) * alpha * restart_vector
         mScore = first_product - second_product + third_product
 
         error_terms.append(get_l1_norm(mScore, mPreviousScore))
