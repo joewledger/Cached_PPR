@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 from collections import OrderedDict
+import argparse
 
 
 def plot(output_dir, weight_matrix, query_set, vector_cache, alpha, query_size, cache_size):
@@ -45,19 +46,24 @@ def plot_subset(output_file, results):
 
 
 if __name__ == "__main__":
-    input_file = "Data/Email-Enron.mat"
-    output_dir = "Plots/Error_Iterations/"
+    parser = argparse.ArgumentParser(description="Plots Error Terms vs. Iteration Number for PPR experiments")
+    parser.add_argument('--network_filepath', type=str)
+    parser.add_argument('--query_sizes', type=int, nargs='+')
+    parser.add_argument('--alphas', type=float, nargs='+')
+    parser.add_argument('--cache_sizes', type=int, nargs='+')
+    parser.add_argument('--output_dir', type=str)
+    parser.set_defaults(network_filepath="Data/Email-Enron.mat", query_sizes=[10, 50, 200],
+                        alphas=[.01, .1, .25], cache_sizes=[10, 100, 1000],
+                        output_dir="Plots/Error_Iterations/")
 
-    alphas = [.01, .1, .25]
-    query_sizes = [10, 50, 200]
-    cache_sizes = [10, 100, 1000]
+    args = parser.parse_args()
 
-    weight_matrix = io.load_csr_matrix(input_file)
+    weight_matrix = io.load_csr_matrix(args.network_filepath)
 
     query_set = vu.get_query_sets(1, 200, weight_matrix.shape[0])[0]
     cache = vc.vector_cache()
-    cache.build_cache(weight_matrix, query_set, alphas)
+    cache.build_cache(weight_matrix, query_set, args.alphas)
 
-    for alpha, query_size, cache_size in itertools.product(*[alphas, query_sizes, cache_sizes]):
-        plot(output_dir, weight_matrix, query_set, cache, alpha, query_size, cache_size)
+    for alpha, query_size, cache_size in itertools.product(*[args.alphas, args.query_sizes, args.cache_sizes]):
+        plot(args.output_dir, weight_matrix, query_set, cache, alpha, query_size, cache_size)
         print(alpha, query_size, cache_size)
