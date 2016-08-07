@@ -1,9 +1,7 @@
 from scipy.sparse import *
 from scipy.sparse.linalg import *
 import numpy as np
-import math
-
-import start_vectors as sv
+import vector_utils as vu
 
 
 class PPR_Result:
@@ -72,14 +70,14 @@ def standard_ppr(weight_matrix, query_nodes, alpha, ppr_method=ppr):
     return ppr_method(weight_matrix, start_vector, restart_vector, alpha)
 
 
-def cached_ppr(weight_matrix, query_nodes, vector_cache, cache_size, alpha, norm_method=sv.unnormalized):
+def cached_ppr(weight_matrix, query_nodes, vector_cache, cache_size, alpha, ppr_method=ppr, norm_method=vu.unnormalized):
     dimension = weight_matrix.shape[0]
 
     vector_list = vector_cache.get_vector_list(query_nodes, alpha, cache_size=cache_size)
     start_vector = norm_method(vector_list)
     restart_vector = get_restart_vector(dimension, query_nodes)
 
-    return ppr(weight_matrix, start_vector, restart_vector, alpha)
+    return ppr_method(weight_matrix, start_vector, restart_vector, alpha)
 
 
 def get_restart_vector(dimension, query_nodes):

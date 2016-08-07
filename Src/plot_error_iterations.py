@@ -1,31 +1,38 @@
 import ppr
 import io_utils as io
-import random
-import start_vectors as sv
+import vector_utils as vu
 import vector_cache as vc
 import matplotlib.pyplot as plt
 import numpy as np
+import itertools
 from collections import OrderedDict
 
 
-def plot_error_iterations(input_file, output_file):
+def plot(output_dir, weight_matrix, query_set, vector_cache, alpha, query_size, cache_size):
+    standard = lambda ppr_method: ppr.standard_ppr(weight_matrix, query_set, alpha, ppr_method=ppr_method)
+    cached = lambda ppr_method, norm_method: ppr.cached_ppr(weight_matrix, query_set, vector_cache,
+                                                            cache_size, alpha, ppr_method=ppr_method,
+                                                            norm_method=norm_method)
+    results = OrderedDict([("Standard", standard(ppr.ppr)),
+                           ("Twice Normalized", cached(ppr.ppr, vu.twice_normalized)),
+                           ("Total Sum", cached(ppr.ppr, vu.total_sum)),
+                           ("Chebyshev Standard", standard(ppr.chebyshev_ppr)),
+                           ("Chebyshev Twice Normalized", cached(ppr.chebyshev_ppr, vu.twice_normalized)),
+                           ("Chebyshev Total Sum", cached(ppr.chebyshev_ppr, vu.total_sum))])
 
-    weight_matrix = io.load_csr_matrix(input_file)
-    alpha = .01
-    query_size = 10
-    cache_size = 100
-    query_set = random.sample(range(weight_matrix.shape[0]), query_size)
+    dict_subset = lambda original, keys: OrderedDict([(key, original[key]) for key in keys])
+    output_file = lambda s: "%serror_%s_alpha_%.2f_q_%d_cache_size_%d.png" % (output_dir, s, alpha, query_size, cache_size)
 
-    vector_cache = vc.vector_cache()
-    vector_cache.build_cache(weight_matrix, [query_set], [alpha])
+    plotting_subsets = {output_file("standard"): dict_subset(results, ["Standard", "Twice Normalized", "Total Sum"]),
+                        output_file("chebyshev"): dict_subset(results, ["Chebyshev Standard", "Chebyshev Twice Normalized", "Chebyshev Total Sum"]),
+                        output_file("both"): results}
 
-    result = ppr.standard_ppr(weight_matrix, query_set, alpha)
-    result2 = ppr.cached_ppr(weight_matrix, query_set, vector_cache, cache_size, alpha, norm_method=sv.twice_normalized)
-    result3 = ppr.cached_ppr(weight_matrix, query_set, vector_cache, cache_size, alpha, norm_method=sv.total_sum)
+    for outfile, result in plotting_subsets.items():
+        plot_subset(outfile, result)
 
-    result_labels = OrderedDict([("Standard", result), ("Twice Normalized", result2), ("Total Sum", result3)])
 
-    for label, result in result_labels.items():
+def plot_subset(output_file, results):
+    for label, result in results.items():
         e = result.error_terms
         plt.plot(np.arange(0, len(e), 1), e, label=label)
     plt.ylabel("Size of Error")
@@ -33,11 +40,24 @@ def plot_error_iterations(input_file, output_file):
     plt.yscale('log')
     plt.legend()
     plt.title("Error Terms vs. Number of Iterations")
-    plt.show()
+    plt.savefig(output_file)
+    plt.close()
+
 
 if __name__ == "__main__":
-    #input_file = "Data/Email-Enron.mat"
-    input_file = "Data/test1000.mtx"
-    output_file = "Results/plot_error_iterations.png"
+    input_file = "Data/Email-Enron.mat"
+    output_dir = "Plots/Error_Iterations/"
 
-    plot_error_iterations(input_file, output_file)
+    alphas = [.01, .1, .25]
+    query_sizes = [10, 50, 200]
+    cache_sizes = [10, 100, 1000]
+
+    weight_matrix = io.load_csr_matrix(input_file)
+
+    query_set = vu.get_query_sets(1, 200, weight_matrix.shape[0])[0]
+    cache = vc.vector_cache()
+    cache.build_cache(weight_matrix, query_set, alphas)
+
+    for alpha, query_size, cache_size in itertools.product(*[alphas, query_sizes, cache_sizes]):
+        plot(output_dir, weight_matrix, query_set, cache, alpha, query_size, cache_size)
+        print(alpha, query_size, cache_size)

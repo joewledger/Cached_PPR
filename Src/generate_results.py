@@ -1,23 +1,18 @@
 import itertools
-import random
 import io_utils
 import ppr
 import argparse
 import vector_cache
-import start_vectors as sv
+import vector_utils as vu
 
 
 def generate_results(network_filepath, save_file, query_sizes, alphas, cache_sizes, num_threads, num_permutations):
 
     weight_matrix = io_utils.load_csr_matrix(network_filepath)
     dimension = weight_matrix.shape[0]
-    query_sets = generate_query_sets(num_permutations, max(query_sizes), dimension)
+    query_sets = vu.get_query_sets(num_permutations, max(query_sizes), dimension)
     cache = get_vector_cache(weight_matrix, query_sets, alphas)
     save_results(save_file, weight_matrix, cache, query_sets, query_sizes, alphas, cache_sizes, num_threads)
-
-
-def generate_query_sets(num_sets, set_size, query_range):
-    return [random.sample(range(query_range), set_size) for _ in range(num_sets)]
 
 
 def get_vector_cache(weight_matrix, query_sets, alphas):
@@ -31,8 +26,8 @@ def save_results(save_file, weight_matrix, cache, query_sets, query_sizes, alpha
     for query_set, query_size, alpha, cache_size in itertools.product(*[query_sets, query_sizes, alphas, cache_sizes]):
         q = query_set[:query_size]
         standard = ppr.standard_ppr(weight_matrix, q, alpha).num_iterations
-        total_sum = ppr.cached_ppr(weight_matrix, q, cache, cache_size, alpha, norm_method=sv.total_sum).num_iterations
-        twice_normalized = ppr.cached_ppr(weight_matrix, q, cache, cache_size, alpha, norm_method=sv.twice_normalized).num_iterations
+        total_sum = ppr.cached_ppr(weight_matrix, q, cache, cache_size, alpha, norm_method=vu.total_sum).num_iterations
+        twice_normalized = ppr.cached_ppr(weight_matrix, q, cache, cache_size, alpha, norm_method=vu.twice_normalized).num_iterations
         writer.write("\t".join(str(x) for x in ["standard", query_size, alpha, cache_size, standard]) + "\n")
         writer.write("\t".join(str(x) for x in ["total_sum", query_size, alpha, cache_size, total_sum]) + "\n")
         writer.write("\t".join(str(x) for x in ["twice_normalized", query_size, alpha, cache_size, twice_normalized]) + "\n")

@@ -9,7 +9,10 @@ class vector_cache:
         self.trimmed_cache = {}
 
     def build_cache(self, weight_matrix, query_sets, alphas):
-        all_query_nodes = set(itertools.chain(*query_sets))
+        if(type(query_sets[0]) == list):
+            all_query_nodes = set(itertools.chain(*query_sets))
+        else:
+            all_query_nodes = query_sets
         for query_node, alpha in itertools.product(all_query_nodes, alphas):
             vector = ppr.get_proximity_vector(weight_matrix, query_node, alpha)
             self.insert_vector(query_node, alpha, vector)
