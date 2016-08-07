@@ -8,7 +8,11 @@ Example_Code/
 Papers/
 Results/*
 !Results/empty
-Plots/
+Plots/*
+!Plots/empty
+!Plots/Error_Iterations
+Plots/Error_Iterations/*
+!Plots/Error_Iterations/empty
 Perm_Results/
 Presentations/
 *.pyc
