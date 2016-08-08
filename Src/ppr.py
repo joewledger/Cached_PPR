@@ -36,7 +36,7 @@ def chebyshev_ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10)
 
     dimension = weight_matrix.shape[0]
 
-    mu_values = [0.0, - (1.0 / (1 - alpha))]
+    mu_values = [0.0, - (1.0 / (1.0 - alpha))]
     vectors = [zeroes_vector(dimension), start_vector]
 
     while(error_terms[-1] > eps and iterations < max_iter):

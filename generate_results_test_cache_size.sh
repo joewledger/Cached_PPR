@@ -1,1 +1,0 @@
-python Src/generate_results.py --network_filepath Data/test.mtx --alphas .01 --query_sizes 10  --num_permutations 100 --save_file "Results/test_cache.txt"

@@ -1,1 +1,1 @@
-python Src/generate_results.py --network_filepath Data/test.mtx --query_sizes 10 20 50 --cache_sizes 10 20 50 --save_file "Results/test.txt"
+python Src/generate_results.py --network_filepath Data/test1000.mtx --query_sizes 10 --alphas .01 --cache_sizes 10 --num_processes 2 --num_permutations 2 --save_file Results/test2.txt

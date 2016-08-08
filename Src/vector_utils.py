@@ -1,8 +1,8 @@
 import random
 
 
-def get_query_sets(num_sets, set_size, query_range):
-    return [random.sample(range(query_range), set_size) for _ in range(num_sets)]
+def get_query_sets(num_sets, set_size, population):
+    return [random.sample(population, set_size) for _ in range(num_sets)]
 
 
 def unnormalized(vector_list):

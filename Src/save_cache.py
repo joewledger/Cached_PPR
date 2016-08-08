@@ -8,7 +8,7 @@ import pickle
 def save_cache(network_filepath, cache_filepath, query_set_filepath, alphas, num_queries):
     weight_matrix = io.load_csr_matrix(network_filepath)
 
-    query_set = vu.get_query_sets(1, num_queries, weight_matrix.shape[0])[0]
+    query_set = vu.get_query_sets(1, num_queries, range(weight_matrix.shape[0]))[0]
 
     cache = vc.vector_cache()
     cache.build_cache(weight_matrix, query_set, alphas)

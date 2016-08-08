@@ -1,1 +1,0 @@
-python Src/generate_results.py
