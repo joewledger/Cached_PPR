@@ -28,9 +28,15 @@ def save_results(save_file, weight_matrix, cache, query_sets, query_sizes, alpha
         standard = ppr.standard_ppr(weight_matrix, q, alpha).num_iterations
         total_sum = ppr.cached_ppr(weight_matrix, q, cache, cache_size, alpha, norm_method=vu.total_sum).num_iterations
         twice_normalized = ppr.cached_ppr(weight_matrix, q, cache, cache_size, alpha, norm_method=vu.twice_normalized).num_iterations
+        chebyshev_standard = ppr.standard_ppr(weight_matrix, q, alpha, ppr_method=ppr.chebyshev_ppr).num_iterations
+        chebyshev_total_sum = ppr.cached_ppr(weight_matrix, q, cache, cache_size, alpha, ppr_method=ppr.chebyshev_ppr, norm_method=vu.total_sum).num_iterations
+        chebyshev_twice_normalized = ppr.cached_ppr(weight_matrix, q, cache, cache_size, alpha, ppr_method=ppr.chebyshev_ppr, norm_method=vu.twice_normalized).num_iterations
         writer.write("\t".join(str(x) for x in ["standard", query_size, alpha, cache_size, standard]) + "\n")
         writer.write("\t".join(str(x) for x in ["total_sum", query_size, alpha, cache_size, total_sum]) + "\n")
         writer.write("\t".join(str(x) for x in ["twice_normalized", query_size, alpha, cache_size, twice_normalized]) + "\n")
+        writer.write("\t".join(str(x) for x in ["chebyshev_standard", query_size, alpha, cache_size, chebyshev_standard]) + "\n")
+        writer.write("\t".join(str(x) for x in ["chebyshev_total_sum", query_size, alpha, cache_size, chebyshev_total_sum]) + "\n")
+        writer.write("\t".join(str(x) for x in ["chebyshev_twice_normalized", query_size, alpha, cache_size, chebyshev_twice_normalized]) + "\n")
     writer.close()
 
 

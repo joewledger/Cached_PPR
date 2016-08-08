@@ -41,7 +41,7 @@ def plot_subset(output_file, results, alpha, query_size, cache_size):
     plt.xlabel("Number of Iterations")
     plt.yscale('log')
     plt.legend()
-    plt.title("Error Terms vs. Number of Iterations")
+    plt.title(r'Convergence Rate ($\alpha$=%.2f, |Q|=%d, |I|=%d)' % (alpha, query_size, cache_size))
     plt.savefig(output_file)
     plt.close()
 
@@ -64,6 +64,7 @@ if __name__ == "__main__":
     query_nodes = io.load_query_nodes("Cache/Email-Enron-queries.pickle")
     query_set = random.sample(query_nodes, 200)
     cache = vc.vector_cache()
+    print("Started loading vector cache")
     cache.load_from_file("Cache/Email-Enron.pickle")
     print("Done loading vector cache")
 
