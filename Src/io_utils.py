@@ -1,5 +1,10 @@
 import scipy.io as spio
 import numpy as np
+import pickle
+
+
+def load_query_nodes(filename):
+	return pickle.load(open(filename, "rb"))
 
 
 def load_csr_matrix(filename):

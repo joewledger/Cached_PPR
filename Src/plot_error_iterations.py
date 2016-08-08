@@ -7,6 +7,7 @@ import numpy as np
 import itertools
 from collections import OrderedDict
 import argparse
+import random
 
 
 def plot(output_dir, weight_matrix, query_set, vector_cache, alpha, query_size, cache_size):
@@ -29,10 +30,10 @@ def plot(output_dir, weight_matrix, query_set, vector_cache, alpha, query_size, 
                         output_file("both"): results}
 
     for outfile, result in plotting_subsets.items():
-        plot_subset(outfile, result)
+        plot_subset(outfile, result, alpha, query_size, cache_size)
 
 
-def plot_subset(output_file, results):
+def plot_subset(output_file, results, alpha, query_size, cache_size):
     for label, result in results.items():
         e = result.error_terms
         plt.plot(np.arange(0, len(e), 1), e, label=label)
@@ -60,9 +61,11 @@ if __name__ == "__main__":
 
     weight_matrix = io.load_csr_matrix(args.network_filepath)
 
-    query_set = vu.get_query_sets(1, 200, weight_matrix.shape[0])[0]
+    query_nodes = io.load_query_nodes("Cache/Email-Enron-queries.pickle")
+    query_set = random.sample(query_nodes, 200)
     cache = vc.vector_cache()
-    cache.build_cache(weight_matrix, query_set, args.alphas)
+    cache.load_from_file("Cache/Email-Enron.pickle")
+    print("Done loading vector cache")
 
     for alpha, query_size, cache_size in itertools.product(*[args.alphas, args.query_sizes, args.cache_sizes]):
         plot(args.output_dir, weight_matrix, query_set, cache, alpha, query_size, cache_size)

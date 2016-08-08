@@ -1,6 +1,6 @@
 import numpy as np
-import itertools
-import matplotlib.pyplot as plt
+#import itertools
+#import matplotlib.pyplot as plt
 
 
 def read_results_dict(filename):
@@ -19,6 +19,12 @@ def read_results_dict(filename):
     return results_dict
 
 
+def generic_plot_all(results_dict, ind_variable_loc):
+    non_rel_variables = {1, 2, 3} - {ind_variable_loc}
+    key_combinations =  {key}
+
+
+"""
 def get_summary_dict(results_dict):
     return {key: (np.mean(value), np.std(value)) for key, value in results_dict.items()}
 
@@ -119,10 +125,13 @@ def get_matching_entries(summary_dict, method, query_size, alpha, cache_size):
 def get_max_and_min(summary_dict):
     iterable = [x[0] for x in summary_dict.values()]
     return min(iterable) - 5, max(iterable) + 5
+"""
+
 
 
 if __name__ == "__main__":
     datafile = "Results/out.txt"
+    """
     save_dir = "Plots/Full/"
 
     results_dict = read_results_dict(datafile)
@@ -131,3 +140,6 @@ if __name__ == "__main__":
     plot_alpha(save_dir, summary_dict)
     plot_query_size(save_dir, summary_dict)
     plot_cache_size(save_dir, summary_dict)
+    """
+    results_dict = read_results_dict(datafile)
+    print(generic_plot_all(results_dict, 2))

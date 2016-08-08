@@ -1,5 +1,6 @@
 import ppr
 import itertools
+import pickle
 
 
 class vector_cache:
@@ -14,6 +15,7 @@ class vector_cache:
         else:
             all_query_nodes = query_sets
         for query_node, alpha in itertools.product(all_query_nodes, alphas):
+            print(query_node, alpha)
             vector = ppr.get_proximity_vector(weight_matrix, query_node, alpha)
             self.insert_vector(query_node, alpha, vector)
 
@@ -48,6 +50,12 @@ class vector_cache:
             return [self.get_trimmed_vector(node_id, alpha, cache_size) for node_id in query_set]
         else:
             return [self.get_vector(node_id, alpha) for node_id in query_set]
+
+    def save_to_file(self, filename):
+        pickle.dump(self.cache, open(filename, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+
+    def load_from_file(self, filename):
+        self.cache = pickle.load(open(filename, 'rb'))
 
     def __str__(self):
         return "\n".join("(%d, %s): %s %d" % (key[0], key[1], str(type(self.cache[key])), i) for i, key in enumerate(self.cache.keys()))
