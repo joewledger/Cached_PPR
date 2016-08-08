@@ -4,7 +4,6 @@ import ppr
 import argparse
 import vector_cache
 import vector_utils as vu
-import multiprocessing
 
 
 class Param_Object:
@@ -19,7 +18,7 @@ class Param_Object:
         self.num_permutations = num_permutations
 
 
-def generate_results(network_filepath, save_file, query_sizes, alphas, cache_sizes, num_processes, num_permutations):
+def generate_results(network_filepath, save_file, query_sizes, alphas, cache_sizes, num_permutations):
 
     query_node_filepath = network_filepath.replace("Data/", "Cache/")[:-4] + "-queries.pickle"
     cache_filepath = network_filepath.replace("Data/", "Cache/")[:-4] + ".pickle"
@@ -31,8 +30,7 @@ def generate_results(network_filepath, save_file, query_sizes, alphas, cache_siz
     cache.load_from_file(cache_filepath)
     param_objects = [Param_Object(weight_matrix, cache, q_set, q_size, a, c_size, num_permutations) for q_set, q_size,
                      a, c_size in itertools.product(*[query_sets, query_sizes, alphas, cache_sizes])]
-    pool = multiprocessing.Pool(num_processes)
-    result = pool.map(get_ppr_results, param_objects)
+    result = [get_ppr_results(p) for p in param_objects]
     flatten = lambda l: [item for sublist in l for item in sublist]
     result = flatten(result)
     writer = open(save_file, "w")
@@ -68,14 +66,12 @@ if __name__ == '__main__':
     parser.add_argument('--query_sizes', type=int, nargs='+')
     parser.add_argument('--alphas', type=float, nargs='+')
     parser.add_argument('--cache_sizes', type=int, nargs='+')
-    parser.add_argument('--num_processes', type=int)
     parser.add_argument('--num_permutations', type=int)
 
-    parser.set_defaults(network_filepath="Data/Email-Enron.mat", save_file="Results/out.txt",
-                        query_sizes=[10, 50, 200], alphas=[.01, .1, .25], cache_sizes=[10, 100, 1000],
-                        num_processes=10, num_permutations=10)
+    parser.set_defaults(network_filepath="Data/Email-Enron.mat", save_file="Results/out.txt", query_sizes=[10, 50, 200],
+                        alphas=[.01, .1, .25], cache_sizes=[10, 100, 1000], num_permutations=10)
 
     args = parser.parse_args()
 
     generate_results(args.network_filepath, args.save_file, args.query_sizes, args.alphas,
-                     args.cache_sizes, args.num_processes, args.num_permutations)
+                     args.cache_sizes, args.num_permutations)
