@@ -104,9 +104,9 @@ def trim_vector(vector, k):
     return matrix.tocsr()
 
 
-def get_proximity_vector(weight_matrix, query_node, alpha, eps=1E-10):
+def get_proximity_vector(weight_matrix, query_node, alpha, ppr_method=chebyshev_ppr, eps=1E-10):
     dimension = weight_matrix.shape[0]
     restart_vector = get_restart_vector(dimension, [query_node])
     start_vector = restart_vector.copy()
-    proximity_vector = ppr(weight_matrix, start_vector, restart_vector, alpha, eps=eps).final_vector
+    proximity_vector = ppr_method(weight_matrix, start_vector, restart_vector, alpha, eps=eps).final_vector
     return proximity_vector

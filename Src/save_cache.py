@@ -16,7 +16,7 @@ def save_cache(network_filepath, alphas, num_queries):
     query_set = vu.get_query_sets(1, min(dimension, num_queries), range(dimension))[0]
 
     cache = vc.vector_cache()
-    cache.build_cache(weight_matrix, query_set, alphas)
+    cache.build_cache(weight_matrix, query_set, alphas, eps=1E-5)
 
     cache.save_to_file(cache_filepath)
     pickle.dump(query_set, open(query_set_filepath, "wb"))
