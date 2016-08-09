@@ -1,6 +1,7 @@
 import ppr
 import itertools
 import pickle
+from multiprocessing import Manager, Pool
 
 
 class vector_cache:
@@ -9,14 +10,23 @@ class vector_cache:
         self.cache = {}
         self.trimmed_cache = {}
 
-    def build_cache(self, weight_matrix, query_sets, alphas, eps=1E-10):
+    def build_cache(self, weight_matrix, query_sets, alphas, eps=1E-10, num_processes=1):
         if(type(query_sets[0]) == list):
             all_query_nodes = set(itertools.chain(*query_sets))
         else:
             all_query_nodes = query_sets
-        for query_node, alpha in itertools.product(all_query_nodes, alphas):
-            print(query_node, alpha)
-            vector = ppr.get_proximity_vector(weight_matrix, query_node, alpha, eps=eps)
+
+        manager = Manager()
+        namespace = manager.Namespace()
+        namespace.weight_matrix = weight_matrix
+        namespace.eps = eps
+
+        parameters = [(namespace, query_node, alpha) for query_node, alpha in itertools.product(all_query_nodes, alphas)]
+
+        pool = Pool(processes=num_processes)
+        result = pool.starmap(get_proximity_vector, parameters)
+
+        for query_node, alpha, vector in result:
             self.insert_vector(query_node, alpha, vector)
 
     def get_vector(self, node_id, alpha):
@@ -59,3 +69,7 @@ class vector_cache:
 
     def __str__(self):
         return "\n".join("(%d, %s): %s %d" % (key[0], key[1], str(type(self.cache[key])), i) for i, key in enumerate(self.cache.keys()))
+
+
+def get_proximity_vector(namespace, query_node, alpha):
+    return (query_node, alpha, ppr.get_proximity_vector(namespace.weight_matrix, query_node, alpha, eps=namespace.eps))
