@@ -20,8 +20,8 @@ class Param_Object:
 
 def generate_results(network_filepath, save_file, query_sizes, alphas, cache_sizes, num_permutations):
 
-    query_node_filepath = network_filepath.replace("Data/", "Cache/")[:-4] + "-queries.pickle"
-    cache_filepath = network_filepath.replace("Data/", "Cache/")[:-4] + ".pickle"
+    query_node_filepath = io.get_cached_queries_filepath(network_filepath)
+    cache_filepath = io.get_cache_filepath(network_filepath)
 
     weight_matrix = io.load_csr_matrix(network_filepath)
     query_nodes = io.load_query_nodes(query_node_filepath)

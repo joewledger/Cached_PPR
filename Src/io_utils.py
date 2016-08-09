@@ -3,8 +3,16 @@ import numpy as np
 import pickle
 
 
+def get_cache_filepath(network_filepath):
+    return network_filepath.replace("Data/", "Cache/")[:-4] + ".pickle"
+
+
+def get_cached_queries_filepath(network_filepath):
+    return network_filepath.replace("Data/", "Cache/")[:-4] + "-queries.pickle"
+
+
 def load_query_nodes(filename):
-	return pickle.load(open(filename, "rb"))
+    return pickle.load(open(filename, "rb"))
 
 
 def load_csr_matrix(filename):
