@@ -8,8 +8,7 @@ import ppr
 import numpy as np
 
 
-def plot_all(network_filepath, save_dir, query_sizes, alphas, cache_sizes):
-    num_permutations = 10
+def plot_all(network_filepath, save_dir, query_sizes, alphas, cache_sizes, num_permutations):
 
     weight_matrix = io.load_csr_matrix(network_filepath)
     cache = vector_cache.vector_cache()
@@ -23,22 +22,8 @@ def plot_all(network_filepath, save_dir, query_sizes, alphas, cache_sizes):
 
 
 def plot_incorrect_alpha(save_dir, weight_matrix, query_sets, cache, alphas, query_size, cache_size):
-    #
 
-    baseline = {alpha: [] for alpha in alphas}
-    results = {(a1, a2): [] for a1, a2 in itertools.product(*[alphas, alphas])}
-
-    for query_set in query_sets:
-        for actual_alpha in alphas:
-            baseline_iterations = ppr.standard_ppr(weight_matrix, query_set, actual_alpha, ppr_method=ppr.chebyshev_ppr).num_iterations
-            baseline[actual_alpha].append(baseline_iterations)
-            for cache_alpha in alphas:
-                comparison_iterations = incorrect_alpha_ppr(weight_matrix, query_set, actual_alpha, cache_alpha,
-                                                            cache, cache_size, ppr.chebyshev_ppr, vu.twice_normalized).num_iterations
-                results[(actual_alpha, cache_alpha)].append(comparison_iterations)
-
-    comparison_dict = get_comparision_dict(baseline, results)
-    grid = get_comparison_grid(comparison_dict, alphas)
+    grid = get_comparison_grid(weight_matrix, query_sets, cache, alphas, query_size, cache_size)
 
     fig = plt.figure()
     axes = fig.add_subplot(111)
@@ -52,25 +37,47 @@ def plot_incorrect_alpha(save_dir, weight_matrix, query_sets, cache, alphas, que
     axes.set_yticks(ticks)
     axes.set_xticklabels(tick_labels)
     axes.set_yticklabels(reversed(tick_labels))
-    cbar = fig.colorbar(img)
+    fig.colorbar(img)
     save_file = "%sincorrect_alpha_plot_q_%d_c_%d.png" % (save_dir, query_size, cache_size)
     plt.savefig(save_file)
 
 
-def get_comparision_dict(baseline, results):
-    comparison = {}
-    for alpha1, alpha2 in results.keys():
-        r = np.array(results[(alpha1, alpha2)])
-        b = np.array(baseline[alpha1])
-        comparison[(alpha1, alpha2)] = np.mean(r) / np.mean(b)
-    return comparison
+def float_key(f):
+    return "%.3f" % f
 
 
-def get_comparison_grid(comparison_dict, alphas):
+def get_comparison_grid(weight_matrix, query_sets, cache, alphas, query_size, cache_size):
+
+    baseline, comparison = get_baseline_and_comparison(weight_matrix, query_sets, cache, alphas, query_size, cache_size)
+    comparison_dict = get_comparision_dict(baseline, comparison)
     grid = []
     for ca in reversed(alphas):
-        grid.append([comparison_dict[(aa, ca)] for aa in alphas])
+        grid.append([comparison_dict[(float_key(aa), float_key(ca))] for aa in alphas])
     return grid
+
+
+def get_comparision_dict(baseline, comparison):
+    comparison_dict = {}
+    for alpha1, alpha2 in comparison.keys():
+        c = np.array(comparison[(alpha1, alpha2)])
+        b = np.array(baseline[alpha1])
+        comparison_dict[(alpha1, alpha2)] = np.mean(c) / np.mean(b)
+    return comparison_dict
+
+
+def get_baseline_and_comparison(weight_matrix, query_sets, cache, alphas, query_size, cache_size):
+    baseline = {float_key(alpha): [] for alpha in alphas}
+    comparison = {(float_key(a1), float_key(a2)): [] for a1, a2 in itertools.product(*[alphas, alphas])}
+
+    for query_set in query_sets:
+        for actual_alpha in alphas:
+            baseline_iterations = ppr.standard_ppr(weight_matrix, query_set, actual_alpha, ppr_method=ppr.chebyshev_ppr).num_iterations
+            baseline[float_key(actual_alpha)].append(baseline_iterations)
+            for cache_alpha in alphas:
+                comparison_iterations = incorrect_alpha_ppr(weight_matrix, query_set, actual_alpha, cache_alpha,
+                                                            cache, cache_size, ppr.chebyshev_ppr, vu.twice_normalized).num_iterations
+                comparison[(float_key(actual_alpha), float_key(cache_alpha))].append(comparison_iterations)
+    return baseline, comparison
 
 
 def incorrect_alpha_ppr(weight_matrix, query_nodes, alpha, cache_alpha, cache, cache_size, ppr_method, norm_method):
@@ -90,10 +97,11 @@ if __name__ == '__main__':
     parser.add_argument('--query_sizes', type=int, nargs='+')
     parser.add_argument('--alphas', type=float, nargs='+')
     parser.add_argument('--cache_sizes', type=int, nargs='+')
+    parser.add_argument('--num_permutations', type=int)
 
     parser.set_defaults(network_filepath="Data/Email-Enron.mat", save_dir="Plots/Incorrect_Alphas/", query_sizes=[10, 50, 200],
-                        alphas=[.01, .1, .25], cache_sizes=[10, 100, 1000])
+                        alphas=[.01, .1, .25], cache_sizes=[10, 100, 1000], num_permutations=10)
 
     args = parser.parse_args()
 
-    plot_all(args.network_filepath, args.save_dir, args.query_sizes, args.alphas, args.cache_sizes)
+    plot_all(args.network_filepath, args.save_dir, args.query_sizes, args.alphas, args.cache_sizes, args.num_permutations)
