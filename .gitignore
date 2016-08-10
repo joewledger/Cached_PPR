@@ -14,6 +14,9 @@ Plots/*
 !Plots/Error_Iterations
 Plots/Error_Iterations/*
 !Plots/Error_Iterations/empty
+!Plots/Incorrect_Alphas
+Plots/Incorrect_Alphas/*
+!Plots/Incorrect_Alphas/empty
 Perm_Results/
 Presentations/
 *.pyc
