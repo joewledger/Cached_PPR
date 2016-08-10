@@ -36,7 +36,7 @@ def plot_incorrect_alpha(save_dir, weight_matrix, query_sets, cache, alphas, que
     axes.set_xticks(ticks)
     axes.set_yticks(ticks)
     axes.set_xticklabels(tick_labels)
-    axes.set_yticklabels(reversed(tick_labels))
+    axes.set_yticklabels(list(reversed(tick_labels)))
     fig.colorbar(img)
     save_file = "%sincorrect_alpha_plot_q_%d_c_%d.png" % (save_dir, query_size, cache_size)
     plt.savefig(save_file)
