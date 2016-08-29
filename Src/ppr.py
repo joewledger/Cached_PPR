@@ -2,6 +2,7 @@ from scipy.sparse import *
 from scipy.sparse.linalg import *
 import numpy as np
 import vector_utils as vu
+import math
 
 
 class PPR_Result:
@@ -48,6 +49,46 @@ def chebyshev_ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10)
         iterations += 1
 
     return PPR_Result(vectors[-1], iterations, error_terms[1:])
+
+
+def chebyshev_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-10):
+    max_iter = 10000
+    iterations = 0
+
+    Kappa = (2-alpha)/alpha;
+    Xi = (math.sqrt(Kappa)-1)/(math.sqrt(Kappa) +1);
+    ErrorBound = Xi;
+
+    muPPrevious = 1.0;
+    muPrevious = 1/(1-alpha);
+    mu = 0.0;
+
+    dimension = weight_matrix.shape[0]
+
+    mPPreviousScore = zeroes_vector(dimension)
+    mPreviousScore = start_vector
+    mScore = zeroes_vector(dimension)
+
+    error_terms = [1.0]
+
+    r = np.arange(dimension)
+    while(r.size > k):
+        mu = 2 / (1 - alpha) * muPrevious - muPPrevious
+        mScore = 2 * (muPrevious / mu) * weight_matrix.dot(mPreviousScore) - (muPPrevious / mu) * mPPreviousScore + (2 * muPrevious) / ((1 - alpha) * mu) * alpha * restart_vector
+        theta = kth_value(mScore, k)
+        f = mScore.toarray().flatten()
+        r = np.argwhere(f + 4 * ErrorBound > theta)
+        iterations += 1
+        ErrorBound = ErrorBound * Xi
+        muPPrevious = muPrevious
+        muPrevious = mu
+        mPPreviousScore = mPreviousScore
+        mPreviousScore = mScore
+        if(iterations == max_iter or ErrorBound < eps):
+            break
+    final_vector = dok_matrix((dimension, 1))
+    final_vector.update({(x, 0) : mScore[x,0] for x in r.flatten()})
+    return PPR_Result(final_vector, iterations, None)
 
 
 def standard_ppr(weight_matrix, query_nodes, alpha, ppr_method=ppr):
@@ -102,6 +143,12 @@ def trim_vector(vector, k):
     entries = {(i, 0): data[i] for i in ind}
     matrix.update(entries)
     return matrix.tocsr()
+
+
+def kth_value(vector, k):
+    data = vector.toarray().flatten()
+    ind = np.argpartition(data, -k)[-k]
+    return data[ind]
 
 
 def get_proximity_vector(weight_matrix, query_node, alpha, ppr_method=chebyshev_ppr, eps=1E-10):
