@@ -1,29 +1,29 @@
 import argparse
-import vector_cache as vc
+import vector_index as vc
 import vector_utils as vu
 import io_utils as io
 import pickle
 
 
-def save_cache(network_filepath, alphas, num_queries, num_processes):
+def save_index(network_filepath, alphas, num_queries, num_processes):
 
-    cache_filepath = io.get_cache_filepath(network_filepath)
-    query_set_filepath = io.get_cached_queries_filepath(network_filepath)
+    index_filepath = io.get_index_filepath(network_filepath)
+    query_set_filepath = io.get_indexd_queries_filepath(network_filepath)
 
     weight_matrix = io.load_csr_matrix(network_filepath)
     dimension = weight_matrix.shape[0]
 
     query_set = vu.get_query_sets(1, min(dimension, num_queries), range(dimension))[0]
 
-    cache = vc.vector_cache()
-    cache.build_cache(weight_matrix, query_set, alphas, eps=1E-10, num_processes=num_processes)
+    index = vc.vector_index()
+    index.build_index(weight_matrix, query_set, alphas, eps=1E-10, num_processes=num_processes)
 
-    cache.save_to_file(cache_filepath)
+    index.save_to_file(index_filepath)
     pickle.dump(query_set, open(query_set_filepath, "wb"))
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Saves vector cache for use in future experiments")
+    parser = argparse.ArgumentParser(description="Saves vector index for use in future experiments")
     parser.add_argument('--network_filepath', type=str)
     parser.add_argument('--num_queries', type=int)
     parser.add_argument('--alphas', type=float, nargs='+')
@@ -34,4 +34,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    save_cache(args.network_filepath, args.alphas, args.num_queries, args.num_processes)
+    save_index(args.network_filepath, args.alphas, args.num_queries, args.num_processes)
