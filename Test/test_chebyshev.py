@@ -58,6 +58,3 @@ def test_indexed_chebyshev_top_k():
     print(indexed_top_k_result.num_iterations)
 
     print(ppr.get_l1_norm(indexed_top_k_result.final_vector, top_k_result.final_vector))
-
-
-
