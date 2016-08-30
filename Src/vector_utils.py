@@ -1,4 +1,7 @@
 import random
+import numpy as np
+from scipy.sparse import *
+from scipy.sparse.linalg import *
 
 
 #Creates a list of num_sets query sets, each of which is of size set_size, and comes from population
@@ -28,7 +31,6 @@ def twice_normalized(vector_list):
 #Gets the standard restart vector in the form of a CSR sparse matrix for a set of query nodes
 def get_restart_vector(dimension, query_nodes):
     entries = {(x, 0): 1 / len(query_nodes) for x in query_nodes}
-
     matrix = dok_matrix((dimension, 1))
     matrix.update(entries)
     return matrix.tocsr()
