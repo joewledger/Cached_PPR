@@ -2,6 +2,14 @@ import vector_utils as vu
 import ppr
 
 
+"""
+Methods in this module provide an interface for using the PPR query and top-K algorithms using a
+set of query nodes instead of a start vector
+
+#This also allows for easy use of the vector index.
+"""
+
+
 #Interface for using the non-indexed PPR algorithms with a set of query nodes
 #Default PPR method is the standard implementation
 #Chebyshev is also possible, change ppr_method to ppr.chebyshev_ppr
@@ -28,9 +36,5 @@ def indexed_ppr(weight_matrix, query_nodes, vector_index, index_size, alpha, ppr
 
 #Gets the proximity vector for a given query node using the specified PPR method
 #Default PPR method is chebyshev, but standard PPR will work the same (but slower)
-def get_proximity_vector(weight_matrix, query_node, alpha, ppr_method=ppr.chebyshev_ppr, eps=1E-10):
-    dimension = weight_matrix.shape[0]
-    restart_vector = vu.get_restart_vector(dimension, [query_node])
-    start_vector = restart_vector.copy()
-    proximity_vector = ppr_method(weight_matrix, start_vector, restart_vector, alpha, eps=eps).final_vector
-    return proximity_vector
+def get_proximity_vector(weight_matrix, query_node, alpha, ppr_method=ppr.chebyshev_ppr):
+    return standard_ppr(weight_matrix, [query_node], alpha, ppr_method=ppr_method).final_vector
