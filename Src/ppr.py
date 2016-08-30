@@ -13,6 +13,7 @@ class PPR_Result:
         self.error_terms = error_terms
 
 
+#Standard implementation of the PPR algorithm.
 def ppr(weight_matrix, start_vector, restart_vector, alpha, eps=1E-10):
     max_iter = 10000
 
@@ -91,6 +92,51 @@ def chebyshev_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1
     return PPR_Result(final_vector, iterations, None)
 
 
+def indexed_chebyshev_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-10):
+    max_iter = 10000
+    iterations = 0
+    error_terms = []
+
+    Kappa = (2-alpha)/alpha;
+    Xi = (math.sqrt(Kappa)-1)/(math.sqrt(Kappa) +1);
+    ErrorBound = Xi ** 2;
+
+    dimension = weight_matrix.shape[0]
+
+    mu_values = [0.0, - (1.0 / (1.0 - alpha))]
+    vectors = [zeroes_vector(dimension), start_vector]
+
+    error_adjusted = False
+    log_threshold = .1
+    ratio = lambda e : (e[-3] / e[-2]) - (e[-2]/ e[-1])
+    unbiased_vectors = [zeroes_vector(dimension), restart_vector.copy()]
+    unbiased_mu_values, unbiased_vectors = chebyshev_next_iteration(weight_matrix, restart_vector, alpha, unbiased_vectors, mu_values)
+    unbiased_error = get_l1_norm(unbiased_vectors[-1], unbiased_vectors[-2])
+    print(unbiased_error)
+
+    r = np.arange(dimension)
+    while(r.size > k and iterations < max_iter and ErrorBound > eps):
+
+        mu_values, vectors = chebyshev_next_iteration(weight_matrix, restart_vector, alpha, vectors, mu_values)
+        error_terms.append(get_l1_norm(vectors[-1], vectors[-2]))
+        mu_values = mu_values[1:]
+        vectors = vectors[1:]
+        if(len(error_terms) > 2):
+            print(ratio(error_terms))
+
+
+        theta = kth_value(vectors[-2], k)
+        f = vectors[-1].toarray().flatten()
+        r = np.argwhere(f + 4 * ErrorBound > theta)
+        ErrorBound = ErrorBound * Xi
+        iterations += 1
+
+    final_vector = dok_matrix((dimension, 1))
+    final_vector.update({(x, 0) : vectors[-1][x,0] for x in r.flatten()})
+
+    return PPR_Result(final_vector, iterations, error_terms[1:])
+
+
 def standard_ppr(weight_matrix, query_nodes, alpha, ppr_method=ppr):
     restart_vector = get_restart_vector(weight_matrix.shape[0], query_nodes)
     start_vector = restart_vector.copy()
@@ -107,20 +153,7 @@ def cached_ppr(weight_matrix, query_nodes, vector_cache, cache_size, alpha, ppr_
     return ppr_method(weight_matrix, start_vector, restart_vector, alpha)
 
 
-def get_restart_vector(dimension, query_nodes):
-    entries = {(x, 0): 1 / len(query_nodes) for x in query_nodes}
 
-    matrix = dok_matrix((dimension, 1))
-    matrix.update(entries)
-    return matrix.tocsr()
-
-
-def zeroes_vector(row_dim):
-    return csr_matrix((row_dim, 1))
-
-
-def get_l1_norm(current_vector, previous_vector):
-    return abs(current_vector - previous_vector).sum(0).item(0)
 
 
 def calculate_next_vector(weight_matrix, curr_vector, restart_vector, alpha):
@@ -134,21 +167,6 @@ def chebyshev_next_iteration(weight_matrix, restart_vector, alpha, vectors, mu_v
     third_product = (2.0 * mu_values[-2]) / ((1.0 - alpha) * mu_values[-1]) * alpha * restart_vector
     vectors.append(first_product - second_product + third_product)
     return mu_values, vectors
-
-
-def trim_vector(vector, k):
-    data = vector.toarray().flatten()
-    ind = np.argpartition(data, -k)[-k:]
-    matrix = dok_matrix(vector.shape)
-    entries = {(i, 0): data[i] for i in ind}
-    matrix.update(entries)
-    return matrix.tocsr()
-
-
-def kth_value(vector, k):
-    data = vector.toarray().flatten()
-    ind = np.argpartition(data, -k)[-k]
-    return data[ind]
 
 
 def get_proximity_vector(weight_matrix, query_node, alpha, ppr_method=chebyshev_ppr, eps=1E-10):
