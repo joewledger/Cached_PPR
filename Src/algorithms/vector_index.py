@@ -1,5 +1,5 @@
-import ppr_interface
-import vector_utils as vu
+import algorithms.ppr_interface as ppr_interface
+import algorithms.vector_utils as vu
 import itertools
 import pickle
 from multiprocessing import Manager, Pool
@@ -22,7 +22,6 @@ class Vector_Index:
         manager = Manager()
         namespace = manager.Namespace()
         namespace.weight_matrix = weight_matrix
-        namespace.eps = eps
 
         parameters = [(namespace, query_node, alpha) for query_node, alpha in itertools.product(all_query_nodes, alphas)]
 
@@ -84,4 +83,4 @@ class Vector_Index:
 
 
 def get_proximity_vector(namespace, query_node, alpha):
-    return (query_node, alpha, ppr_interface.get_proximity_vector(namespace.weight_matrix, query_node, alpha, eps=namespace.eps))
+    return (query_node, alpha, ppr_interface.get_proximity_vector(namespace.weight_matrix, query_node, alpha))
