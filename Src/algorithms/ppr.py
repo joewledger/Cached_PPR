@@ -1,4 +1,4 @@
-import vector_utils as vu
+import algorithms.vector_utils as vu
 from scipy.sparse.linalg import *
 import numpy as np
 import math
@@ -122,8 +122,7 @@ def chebyshev_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1
         mPPreviousScore = mPreviousScore
         mPreviousScore = mScore
 
-    final_vector = dok_matrix((dimension, 1))
-    final_vector.update({(x, 0): mScore[x, 0] for x in r.flatten()}).tocsr()
+    final_vector = vu.build_vector_subset(mScore, r.flatten())
     return PPR_Result(final_vector, iterations, None)
 
 """

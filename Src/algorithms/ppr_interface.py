@@ -1,5 +1,5 @@
-import vector_utils as vu
-import ppr
+import algorithms.vector_utils as vu
+import algorithms.ppr as ppr
 
 
 """

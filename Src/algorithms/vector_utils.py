@@ -56,6 +56,13 @@ def trim_vector(vector, k):
     return matrix.tocsr()
 
 
+#Given a vector and a list of indices to keep, this method will return a CSR vector containing only these indices
+def build_vector_subset(vector, entry_indices):
+    vector_subset = dok_matrix(vector.shape)
+    vector_subset.update({(x, 0): vector[x, 0] for x in entry_indices})
+    return vector_subset.tocsr()
+
+
 #Returns the k_th value of a CSR sparse matrix
 def kth_value(vector, k):
     data = vector.toarray().flatten()
