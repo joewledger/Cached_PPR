@@ -1,6 +1,7 @@
 import algorithms.io_utils as io
 import algorithms.vector_utils as vu
 import algorithms.vector_index as vector_index
+from scipy.sparse import *
 
 
 def test_start_vectors():
@@ -19,3 +20,14 @@ def test_start_vectors():
 
     assert(abs(ts.sum() - tn.sum()) < 1E-5)
     assert(abs(ts.sum() - u.sum()) > index_size * alphas[0])
+
+
+def test_non_zero_indices_set():
+    dimension = 100
+    vector = dok_matrix((dimension, 1))
+    vector.update({(i, 0): (1.0 if i % 2 == 0 else 2.0) for i in range(dimension)})
+    vector = vector.tocsr()
+
+    vector = vu.trim_vector(vector, dimension / 2)
+    nonzeroes = vu.get_nonzero_indices_set(vector)
+    assert(nonzeroes == {i for i in range(dimension) if i % 2 == 1})

@@ -2,6 +2,7 @@ import algorithms.io_utils as io_utils
 import algorithms.ppr_interface as ppr_interface
 import algorithms.ppr as ppr
 import algorithms.vector_utils as vu
+import algorithms.vector_index as vector_index
 import random
 
 
@@ -34,3 +35,30 @@ def test_chebyshev_top_k():
 
     assert(top_k_result.num_iterations < result.num_iterations)
     assert(vu.get_l1_distance(final_vector, top_k_result.final_vector) < 1E-3)
+
+
+def test_indexed_chebyshev_top_k():
+    weight_matrix = io_utils.load_csr_matrix("Data/Email-Enron.mat")
+
+    query_nodes = [15, 40, 200]
+    alpha = .01
+    k = 10
+    index_size = 100
+
+    index = vector_index.Vector_Index()
+    index.build_index(weight_matrix, query_nodes, [alpha])
+
+    #chebyshev_global = ppr_interface.standard_ppr(weight_matrix, query_nodes, alpha, ppr_method=ppr.chebyshev_ppr)
+    #indexed_chebyshev_global = ppr_interface.indexed_ppr(weight_matrix, query_nodes, index, index_size, alpha, ppr_method=ppr.chebyshev_ppr, norm_method=vu.twice_normalized)
+
+    #difference = chebyshev_global.num_iterations - indexed_chebyshev_global.num_iterations
+    #difference = 20
+
+    top_k = ppr_interface.standard_top_k(weight_matrix, query_nodes, alpha, k)
+    indexed_top_k = ppr_interface.indexed_top_k(weight_matrix, query_nodes, index, index_size, alpha, k)
+
+    print(top_k.num_iterations)
+    print(indexed_top_k.num_iterations)
+
+    print(top_k.final_vector)
+    print(indexed_top_k.final_vector)

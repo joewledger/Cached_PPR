@@ -43,7 +43,12 @@ def zeroes_vector(row_dim):
 
 #Gets the L1-distance between two vectors
 def get_l1_distance(current_vector, previous_vector):
-    return abs(current_vector - previous_vector).sum(0).item(0)
+    return get_l1_norm(current_vector - previous_vector)
+
+
+#Gets the L1-norm of a vector
+def get_l1_norm(vector):
+    return abs(vector).sum(0).item(0)
 
 
 #Returns a CSR matrix [m:1] of a CSR matrix [m:1] trimmed to its top k elements
@@ -68,3 +73,12 @@ def kth_value(vector, k):
     data = vector.toarray().flatten()
     ind = np.argpartition(data, -k)[-k]
     return data[ind]
+
+
+#Returns a set containing all the row indices of a vector that contain non-zero entries
+def get_nonzero_indices_set(vector):
+    return set(vector.nonzero()[0])
+
+
+def get_maximum_value(vector):
+    return vector.max()
