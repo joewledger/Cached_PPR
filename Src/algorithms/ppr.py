@@ -94,7 +94,8 @@ def chebyshev_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1
 
     Kappa = (2 - alpha) / alpha
     Xi = (math.sqrt(Kappa) - 1) / (math.sqrt(Kappa) + 1)
-    ErrorBound = Xi * vu.get_maximum_value(start_vector)
+    #ErrorBound = Xi * vu.get_maximum_value(start_vector)
+    ErrorBound = Xi
 
     muPPrevious = 1.0
     muPrevious = 1 / (1 - alpha)
@@ -129,9 +130,8 @@ def squeeze_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-
     max_iter = 10000
     iterations = 0
 
-    Kappa = (2 - alpha) / alpha
-    Xi = (math.sqrt(Kappa) - 1) / (math.sqrt(Kappa) + 1)
-    ErrorBound = alpha * vu.get_maximum_value(start_vector)
+    #ErrorBound = alpha * vu.get_maximum_value(start_vector)
+    ErrorBound = alpha
 
     dimension = weight_matrix.shape[0]
 
@@ -147,7 +147,7 @@ def squeeze_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-
         f = mScore.toarray().flatten()
         r = np.argwhere(f + ErrorBound > theta)
         iterations += 1
-        ErrorBound = ErrorBound * Xi
+        ErrorBound = ErrorBound * alpha
         mPreviousScore = mScore
 
     final_vector = vu.build_vector_subset(mScore, r.flatten())

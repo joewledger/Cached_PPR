@@ -1,7 +1,7 @@
 import argparse
-import vector_index as vc
-import vector_utils as vu
-import io_utils as io
+import algorithms.vector_index as vc
+import algorithms.vector_utils as vu
+import algorithms.io_utils as io
 import pickle
 
 

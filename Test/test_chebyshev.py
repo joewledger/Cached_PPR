@@ -57,8 +57,5 @@ def test_indexed_chebyshev_top_k():
     top_k = ppr_interface.standard_top_k(weight_matrix, query_nodes, alpha, k)
     indexed_top_k = ppr_interface.indexed_top_k(weight_matrix, query_nodes, index, index_size, alpha, k)
 
-    print(top_k.num_iterations)
-    print(indexed_top_k.num_iterations)
-
-    print(top_k.final_vector)
-    print(indexed_top_k.final_vector)
+    assert(top_k.num_iterations > indexed_top_k.num_iterations)
+    assert(vu.get_nonzero_indices_set(top_k.final_vector) == vu.get_nonzero_indices_set(indexed_top_k.final_vector))

@@ -1,7 +1,7 @@
-import random
 import numpy as np
 from scipy.sparse import *
 from scipy.sparse.linalg import *
+import random
 
 
 #Creates a list of num_sets query sets, each of which is of size set_size, and comes from population
@@ -82,3 +82,7 @@ def get_nonzero_indices_set(vector):
 
 def get_maximum_value(vector):
     return vector.max()
+
+
+def count_nonzero_entries(matrix):
+    return len(matrix.nonzero()[0])

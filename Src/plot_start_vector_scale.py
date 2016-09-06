@@ -1,4 +1,4 @@
-import ppr
+import algorithms.ppr
 import io_utils as io
 import vector_utils as vu
 import itertools
