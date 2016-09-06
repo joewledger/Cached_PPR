@@ -18,20 +18,20 @@ def test_chopper_top_k_youtube():
 
     matrix = io.load_csr_matrix("Data/YouTubeLinkData.mat")
     query_nodes = vu.get_query_sets(1, 1, range(matrix.shape[0]))[0]
-    alpha = .25
+    alpha = .4
     k = 20
 
     start = time.time()
     chopper_result = ppr_interface.standard_top_k(matrix, query_nodes, alpha, k)
     chopper_time = time.time() - start
     chopper_iterations = chopper_result.num_iterations
+    print("Chopper takes %.3f seconds to process %d iterations with an alpha of %.2f" % (chopper_time, chopper_iterations, alpha))
 
     start = time.time()
     squeeze_result = ppr_interface.standard_top_k(matrix, query_nodes, alpha, k, top_k_method=ppr.squeeze_top_k)
     squeeze_time = time.time() - start
     squeeze_iterations = squeeze_result.num_iterations
 
-    print("Chopper takes %.3f seconds to process %d iterations with an alpha of %.2f" % (chopper_time, chopper_iterations, alpha))
     print("Squeeze takes %.3f seconds to process %d iterations with an alpha of %.2f" % (squeeze_time, squeeze_iterations, alpha))
 
     print(chopper_result.final_vector)
