@@ -34,10 +34,10 @@ def indexed_ppr(weight_matrix, query_nodes, vector_index, index_size, alpha, ppr
     return ppr_method(weight_matrix, start_vector, restart_vector, alpha)
 
 
-def standard_top_k(weight_matrix, query_nodes, alpha, k, top_k_method=ppr.chebyshev_top_k):
+def standard_top_k(weight_matrix, query_nodes, alpha, k, top_k_method=ppr.chebyshev_top_k, **kwargs):
     restart_vector = vu.get_restart_vector(weight_matrix.shape[0], query_nodes)
     start_vector = restart_vector.copy()
-    return top_k_method(weight_matrix, start_vector, restart_vector, alpha, k)
+    return top_k_method(weight_matrix, start_vector, restart_vector, alpha, k, **kwargs)
 
 
 def indexed_top_k(weight_matrix, query_nodes, vector_index, index_size, alpha, k,

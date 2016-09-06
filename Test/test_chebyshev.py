@@ -59,3 +59,32 @@ def test_indexed_chebyshev_top_k():
 
     assert(top_k.num_iterations > indexed_top_k.num_iterations)
     assert(vu.get_nonzero_indices_set(top_k.final_vector) == vu.get_nonzero_indices_set(indexed_top_k.final_vector))
+
+
+#Demonstrates that CHOPPER top-k will not always get the correct results if we multiply the errorbound by the largest element in the start vector
+def test_chopper_zero_start_vector():
+    weight_matrix = io_utils.load_csr_matrix("Data/Email-Enron.mat")
+    dimension = weight_matrix.shape[0]
+    query_nodes = [15, 40, 200]
+    alpha = .5
+    k = 10
+
+    zero_vector = vu.zeroes_vector(dimension)
+    restart_vector = vu.get_restart_vector(dimension, query_nodes)
+    start_vector = restart_vector.copy()
+    full_start_vector = vu.get_restart_vector(dimension, range(dimension))
+
+    zero_top_k = ppr.chebyshev_top_k(weight_matrix, zero_vector, restart_vector, alpha, k, adjust_error=True)
+    full_start_top_k = ppr.chebyshev_top_k(weight_matrix, full_start_vector, restart_vector, alpha, k, adjust_error=True)
+    zero_standard = ppr.standard_ppr(weight_matrix, zero_vector, restart_vector, alpha)
+    standard = ppr.standard_ppr(weight_matrix, start_vector, restart_vector, alpha)
+
+    print(vu.trim_vector(zero_top_k.final_vector, k))
+    print(vu.trim_vector(full_start_top_k.final_vector, k))
+    print(vu.trim_vector(zero_standard.final_vector, k))
+    print(vu.trim_vector(standard.final_vector, k))
+
+    print(zero_top_k.num_iterations)
+    print(full_start_top_k.num_iterations)
+    print(zero_standard.num_iterations)
+    print(standard.num_iterations)

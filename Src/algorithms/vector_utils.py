@@ -86,3 +86,9 @@ def get_maximum_value(vector):
 
 def count_nonzero_entries(matrix):
     return len(matrix.nonzero()[0])
+
+
+def measure_top_k_recall(ground_truth_vector, approximate_vector, k):
+    ground_truth_vector = trim_vector(ground_truth_vector, k)
+    approximate_vector = trim_vector(approximate_vector, k)
+    return len(get_nonzero_indices_set(ground_truth_vector) & get_nonzero_indices_set(approximate_vector)) / k

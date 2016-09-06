@@ -88,14 +88,13 @@ def chebyshev_next_iteration(weight_matrix, restart_vector, alpha, vectors, mu_v
 
 
 #Implementation of the chebyshev top K algorithm
-def chebyshev_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-10):
+def chebyshev_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-10, adjust_error=False):
     max_iter = 10000
     iterations = 0
 
     Kappa = (2 - alpha) / alpha
     Xi = (math.sqrt(Kappa) - 1) / (math.sqrt(Kappa) + 1)
-    ErrorBound = Xi * vu.get_maximum_value(start_vector)
-    print(ErrorBound)
+    ErrorBound = Xi * (vu.get_maximum_value(start_vector) if adjust_error else 1.0)
 
     muPPrevious = 1.0
     muPrevious = 1 / (1 - alpha)
@@ -122,15 +121,15 @@ def chebyshev_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1
         mPPreviousScore = mPreviousScore
         mPreviousScore = mScore
 
-    final_vector = vu.build_vector_subset(mScore, r.flatten())
+    final_vector = vu.trim_vector(mScore, k)
     return PPR_Result(final_vector, iterations, None)
 
 
-def squeeze_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-10):
+def squeeze_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-10, adjust_error=False):
     max_iter = 10000
     iterations = 0
 
-    ErrorBound = (1 - alpha) * vu.get_maximum_value(start_vector)
+    ErrorBound = (1 - alpha) * (vu.get_maximum_value(start_vector) if adjust_error else 1.0)
 
     dimension = weight_matrix.shape[0]
 
@@ -144,10 +143,10 @@ def squeeze_top_k(weight_matrix, start_vector, restart_vector, alpha, k, eps=1E-
         mScore = (1 - alpha) * weight_matrix.dot(mPreviousScore) + alpha * restart_vector
         theta = vu.kth_value(mScore, k)
         f = mScore.toarray().flatten()
-        r = np.argwhere(f + ErrorBound > theta)
+        r = np.argwhere(f + ErrorBound >= theta)
         iterations += 1
         ErrorBound = ErrorBound * (1 - alpha)
         mPreviousScore = mScore
 
-    final_vector = vu.build_vector_subset(mScore, r.flatten())
+    final_vector = vu.trim_vector(mScore, k)
     return PPR_Result(final_vector, iterations, None)
